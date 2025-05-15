@@ -1,23 +1,31 @@
 default:
   @just --choose
 
-# nixpks-version:="24.11"
-nixpks-version:="unstable"
+nixpks-version:="24.11"
+# nixpks-version:="unstable"
 
 clear-result:
   rm -rf result
   rm -rf nixos.qcow2
   nix-collect-garbage
 
+
 vm-build:
+  nix build .\#nixosConfigurations.nixos.config.system.build.vm
+
+vm-build-impure:
+  nix build .\#nixosConfigurations.nixos.config.system.build.vm --impure
+
+vm-build-classic:
   nix-build '<nixpkgs/nixos>' \
     -A config.system.build.vm \
     -I nixpkgs=channel:nixos-{{nixpks-version}} \
-    -I virtualisation.vmVariant.virtualisation.memorySize=16384 \
-    -I virtualisation.vmVariant.virtualisation.cores=8 \
     -I nixos-config=./configuration.nix
 
-vm-run: vm-build
+vm-run:
+  ./result/bin/run-nixos-vm
+
+vm-build-and-run: vm-build
   ./result/bin/run-nixos-vm
 
 vm-reset: clear-result vm-build vm-run

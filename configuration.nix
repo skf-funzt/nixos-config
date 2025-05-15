@@ -1,17 +1,16 @@
 # Edit this configuration file to define what should be installed on
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
-
-{ config, pkgs, ... }:
-in
 {
+  config,
+  pkgs,
+  ...
+}: {
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
     # Include the VM configuration
     ./vm.nix
-    <home-manager/nixos>
-    (import stylix).homeManagerModules.stylix
   ];
 
   # Bootloader.
@@ -54,6 +53,10 @@ in
   # Enable the GNOME Desktop Environment.
   services.xserver.displayManager.gdm.enable = true;
   services.xserver.desktopManager.gnome.enable = true;
+
+  # This throws an error when KDE is starting
+  # services.displayManager.sddm.enable = true;
+  # services.xserver.desktopManager.plasma6.enable = true;
 
   # Configure keymap in X11
   services.xserver.xkb = {
@@ -105,74 +108,10 @@ in
       "video"
       "podman"
     ];
-    packages = with pkgs; [
+    # packages = with pkgs; [
 
-    ];
+    # ];
     initialPassword = "stephan";
-  };
-  home-manager.users.stephan = {
-    # --------------------------------------------------------------------------
-    # User Information
-    # --------------------------------------------------------------------------
-    # Set your username and home directory. Used by other modules.
-    home.username = "stephan";
-    home.homeDirectory = "/home/stephan";
-
-    # --------------------------------------------------------------------------
-    # Cursor Theme
-    # --------------------------------------------------------------------------
-    # Configure the mouse cursor theme for GTK applications.
-    # ref: https://github.com/ful1e5/bibata
-    # home.pointerCursor = {
-    #   gtk.enable = true;
-    #   name = "Bibata-Modern-Classic";
-    #   package = pkgs.bibata-cursors;
-    #   size = 22;
-    # };
-    # #! FIXME: Stylix colides with eisting XDG directories not able to create a default
-    stylix.enable = true; # Enable Stylix for cursor theme management
-    stylix.autoEnable = true; # Automatically enable Stylix on login
-    stylix.base16Scheme = "${pkgs.base16-schemes}/share/themes/eighties.yaml";
-    stylix.cursor.name = "Bibata-Modern-Classic";
-    stylix.cursor.package = pkgs.bibata-cursors;
-    stylix.cursor.size = 22;
-    stylix.iconTheme = {
-      enable = true;
-      package = pkgs.papirus-icon-theme;
-      light = "Papirus-Light";
-      dark = "Papirus-Dark";
-    };
-
-    stylix.polarity = "dark";
-
-    stylix.fonts = {
-      serif = {
-        package = pkgs.noto-fonts;
-        name = "Noto Serif";
-      };
-
-      sansSerif = {
-        package = pkgs.noto-fonts;
-        name = "Noto Sans";
-      };
-
-      monospace = {
-        package = pkgs.hackgen-nf-font;
-        name = "Hack Nerd Font";
-      };
-
-      emoji = {
-        package = pkgs.noto-fonts-color-emoji;
-        name = "Noto Color Emoji";
-      };
-    };
-
-    # --------------------------------------------------------------------------
-    # Home Manager State Version
-    # --------------------------------------------------------------------------
-    # This value should match the Home Manager release you started with.
-    # Only change after reading the release notes!
-    home.stateVersion = "24.11";
   };
 
   # Optional: Enable passwordless sudo for wheel group members
