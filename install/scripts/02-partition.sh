@@ -28,6 +28,9 @@ sudo sgdisk -n 1:0:+1G   -t 1:ef00 -c 1:"EFI"   "$TARGET_DISK"
 sudo sgdisk -n 2:0:-16G  -t 2:8300 -c 2:"LUKS"  "$TARGET_DISK"
 sudo sgdisk -n 3:0:0     -t 3:8200 -c 3:"swap"  "$TARGET_DISK"
 
+echo "Refreshing kernel partition table..."
+sudo partprobe "$TARGET_DISK"
+
 echo "Partition layout:"
 sudo sgdisk -p "$TARGET_DISK"
 
