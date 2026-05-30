@@ -15,7 +15,7 @@ in
 {
   home.packages = [
     # ── Nix tooling ──
-    pkgs.nixfmt-rfc-style
+    pkgs.nixfmt
     pkgs.nil
     pkgs.nixd
     pkgs.alejandra
