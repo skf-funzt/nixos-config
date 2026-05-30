@@ -1,28 +1,44 @@
 {
+  description = "NixOS Declarative Configuration — Framework Laptop 13 AMD";
+
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
-    stylix.url = "github:danth/stylix";
-    home-manager.url = "github:nix-community/home-manager";
+
+    home-manager.url = "github:nix-community/home-manager/release-26.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+
+    nixos-hardware.url = "github:NixOS/nixos-hardware";
+
+    stylix.url = "github:danth/stylix";
+    stylix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = inputs@{ nixpkgs, nixpkgs-unstable, home-manager, stylix, ... }:
+  outputs = inputs@{ self, nixpkgs, nixpkgs-unstable, home-manager, nixos-hardware, stylix, ... }:
+    let
+      system = "x86_64-linux";
+    in
     {
-      nixosConfigurations."nixos" = nixpkgs-unstable.lib.nixosSystem {
-        system = "x86_64-linux";
-        modules = [
-          stylix.nixosModules.stylix
-          ./configuration.nix
-          home-manager.nixosModules.home-manager
-          {
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.users.stephan = ./home.nix;
+      # ── NixOS Modules ──────────────────────────────────────────
+      nixosModules = {
+        system-btrfs-laptop = import ./modules/system/btrfs-laptop.nix;
+        desktop-gnome       = import ./modules/desktop/gnome.nix;
+        desktop-niri        = import ./modules/desktop/niri.nix;
+        user-stephan        = import ./modules/users/stephan.nix;
+      };
 
-            # Optionally, use home-manager.extraSpecialArgs to pass
-            # arguments to home.nix
-          }
+      # ── Home Manager Modules ───────────────────────────────────
+      homeModules = {
+        desktop-gnome = { };
+        desktop-niri  = { };
+      };
+
+      # ── NixOS Configurations ───────────────────────────────────
+      nixosConfigurations."framework-stephan" = nixpkgs.lib.nixosSystem {
+        inherit system;
+        specialArgs = { inherit inputs self; };
+        modules = [
+          ./modules/hosts/laptop
         ];
       };
     };
