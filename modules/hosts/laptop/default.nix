@@ -92,7 +92,7 @@
     neovim
     gh
     powertop
-    fira-code-nerdfont
+    nerd-fonts.fira-code
     fira-code
     roboto
     google-chrome
