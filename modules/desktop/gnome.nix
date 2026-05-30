@@ -17,8 +17,8 @@
     gnomeExtensions.auto-move-windows
     gnomeExtensions.just-perfection
     gnomeExtensions.gnome-40-ui-improvements
-    gnomeExtensions.custom-accent-colors
     # TODO: not in 26.05 — install manually if needed
+    # gnomeExtensions.custom-accent-colors
     # gnomeExtensions.espresso
     # gnomeExtensions.paperwm
     # gnomeExtensions.spotify-tray

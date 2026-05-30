@@ -20,5 +20,5 @@
   };
 
   # Prevent GDM conflict if both desktop modules are imported
-  services.xserver.displayManager.gdm.enable = lib.mkDefault false;
+  services.displayManager.gdm.enable = lib.mkDefault false;
 }
