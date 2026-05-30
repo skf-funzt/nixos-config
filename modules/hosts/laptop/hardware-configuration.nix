@@ -19,7 +19,12 @@
   boot.kernelModules = [ "kvm-amd" ];
   boot.extraModulePackages = [ ];
 
-  swapDevices = [ ];
+  # LUKS device for the Btrfs root partition (nvme0n1p2)
+  boot.initrd.luks.devices."cryptroot".device = "/dev/disk/by-uuid/48c54d72-5870-4287-9b82-30d61ae78c0e";
+
+  swapDevices = [
+    { device = "/dev/disk/by-partuuid/83c57e8f-1146-45b8-b1b4-e62fc0c3c055"; }
+  ];
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
 }
