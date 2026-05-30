@@ -68,6 +68,9 @@
       # ── Home Manager Modules (reusable across users) ───────────
       homeModules = {
         core          = ./home/core.nix;
+        theme         = ./home/theme.nix;
+        packages      = ./home/packages.nix;
+        programs      = ./home/programs.nix;
         desktop-gnome = ./home/desktop-gnome.nix;
         desktop-niri  = ./home/desktop-niri.nix;
         zsh           = ./home/zsh.nix;
