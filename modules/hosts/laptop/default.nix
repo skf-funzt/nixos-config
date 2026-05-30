@@ -1,13 +1,14 @@
 # modules/hosts/laptop/default.nix
 # Framework Laptop 13 AMD (7040 series)
-{ self, inputs, config, pkgs, lib, ... }: {
+{ config, pkgs, lib, inputs, pkgs-unstable, ... }: {
   imports = [
     ./hardware-configuration.nix
     inputs.nixos-hardware.nixosModules.framework-13-7040-amd
-    self.nixosModules.system-btrfs-laptop
-    self.nixosModules.desktop-gnome
-    self.nixosModules.desktop-niri
-    self.nixosModules.user-stephan
+    inputs.home-manager.nixosModules.home-manager
+    ../../system/btrfs-laptop.nix
+    ../../desktop/gnome.nix
+    ../../desktop/niri.nix
+    ../../users/stephan.nix
   ];
 
   # ── Bootloader ───────────────────────────────────────────────
@@ -126,6 +127,23 @@
   nix.gc.automatic = true;
   nix.gc.options = "--delete-older-than 30d";
   nix.optimise.automatic = true;
+
+  # ── Home Manager Shared Modules ──────────────────────────────
+  home-manager.sharedModules = [
+    inputs.stylix.homeModules.stylix
+    inputs.noctalia.homeModules.default
+  ];
+
+  # ── Home Manager Special Args ────────────────────────────────
+  home-manager.extraSpecialArgs = {
+    inherit inputs pkgs-unstable;
+    nixgl = inputs.nixgl;
+    handy = inputs.handy;
+    khanelivim = inputs.khanelivim;
+    gpuType = "amd";
+    noctalia = inputs.noctalia;
+    nixvim = inputs.khanelivim;
+  };
 
   # ── State Version ────────────────────────────────────────────
   system.stateVersion = "26.05";

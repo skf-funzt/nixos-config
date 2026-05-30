@@ -1,1 +1,0 @@
-/home/stephan/.config/home-manager/home.nix

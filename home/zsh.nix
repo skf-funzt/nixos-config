@@ -14,7 +14,8 @@
   pkgs,
   lib,
   ...
-}: {
+}:
+{
   # --------------------------------------------------------------------------
   # Zsh Program Settings
   # --------------------------------------------------------------------------
@@ -38,7 +39,7 @@
     # Shell Options
     # -------------------
     autocd = true; # Change directory by typing its name
-    dotDir = ".config/zsh"; # Where Zsh stores its config files
+    dotDir = "${config.home.homeDirectory}/.config/zsh"; # Where Zsh stores its config files - use config.home.homeDirectory
 
     # -------------------
     # Plugin Management
@@ -53,8 +54,8 @@
     # Shell Aliases
     # -------------------
     shellAliases = {
-      adhu = "~/Android/Sdk/extras/google/auto/desktop-head-unit"; # Example alias
-      reload = "source ~/.zshrc && zsh"; # Reload Zsh config
+      adhu = "${config.home.homeDirectory}/Android/Sdk/extras/google/auto/desktop-head-unit"; # Example alias
+      reload = "source ${config.home.homeDirectory}/.zshrc && zsh"; # Reload Zsh config
     };
 
     # -------------------
@@ -133,6 +134,9 @@
 
       # # Flutter Chrome executable path
       # export CHROME_EXECUTABLE=/usr/bin/google-chrome-stable
+
+      # OpenCode editor
+      export EDITOR=nvim
     '';
 
     # -------------------
@@ -157,11 +161,11 @@
       # bindkey '^[[1;5D' backward-word
 
       # # ASDF configuration (uncomment if you use asdf)
-      export PATH="${config.home.homeDirectory}/.asdf/shims:$PATH"
-      mkdir -p "${config.home.homeDirectory}/.asdf/completions"
-      if command -v asdf &> /dev/null; then
-        asdf completion zsh > "${config.home.homeDirectory}/.asdf/completions/_asdf"
-      fi
+      # export PATH="${config.home.homeDirectory}/.asdf/shims:$PATH"
+      # mkdir -p "${config.home.homeDirectory}/.asdf/completions"
+      # if command -v asdf &> /dev/null; then
+      #   asdf completion zsh > "${config.home.homeDirectory}/.asdf/completions/_asdf"
+      # fi
 
       # # Load ASDF Java home (uncomment if you use asdf-java)
       # if [ -f ${config.home.homeDirectory}/.asdf/plugins/java/set-java-home.zsh ]; then
@@ -202,11 +206,9 @@
     # https://starship.rs/installing/#nix
     #
     #
-    settings =
-      lib.mkForce
-      (builtins.fromTOML (
-        builtins.readFile "${pkgs.starship}/share/starship/presets/gruvbox-rainbow.toml"
-      ));
+    settings = lib.mkForce (
+      builtins.fromTOML (builtins.readFile "${pkgs.starship}/share/starship/presets/gruvbox-rainbow.toml")
+    );
   };
 
   programs.zoxide = {
