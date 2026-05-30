@@ -87,10 +87,9 @@ in
     # ── CLI tools ──
     pkgs.gemini-cli
     pkgs.github-desktop
-    # TODO: not in nixpkgs-unstable as of 26.05 — install manually if needed
-    # pkgs-unstable.opencode
-    # pkgs-unstable.github-copilot-cli
-    # pkgs-unstable.pi-coding-agent
+    pkgs-unstable.opencode
+    pkgs-unstable.github-copilot-cli
+    pkgs-unstable.pi-coding-agent
     pkgs.bashInteractive
     pkgs.byobu
 
