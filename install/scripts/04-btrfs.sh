@@ -10,7 +10,7 @@ MOUNT="/mnt"
 
 echo "=== Step 4: Btrfs filesystem and subvolumes ==="
 
-sudo mkfs.btrfs -L nixos "$MAPPER"
+sudo mkfs.btrfs -f -L nixos "$MAPPER"
 sudo mount "$MAPPER" "$MOUNT"
 
 sudo btrfs subvolume create "$MOUNT/@"

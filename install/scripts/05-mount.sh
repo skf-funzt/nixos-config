@@ -19,9 +19,13 @@ sudo mount -o subvol=@nix,compress=zstd:1,noatime "$MAPPER" "$MOUNT/nix"
 sudo mount -o subvol=@log,compress=zstd:1,noatime "$MAPPER" "$MOUNT/var/log"
 sudo mount "$EFI" "$MOUNT/boot"
 
-echo "Creating swap..."
-sudo mkswap -L swap "$SWAP"
-sudo swapon "$SWAP"
+if ! swapon --show=NAME | grep -q "^${SWAP}$"; then
+    echo "Creating swap..."
+    sudo mkswap -L swap "$SWAP"
+    sudo swapon "$SWAP"
+else
+    echo "Swap already active."
+fi
 
 echo "Mount status:"
 findmnt -R "$MOUNT"

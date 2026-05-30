@@ -17,6 +17,12 @@ if [[ "$CONFIRM" != "yes" ]]; then
     exit 1
 fi
 
+# ── Close any lingering mapper from previous attempts ──
+if sudo cryptsetup status "$MAPPER_NAME" &>/dev/null; then
+    echo "Closing existing /dev/mapper/$MAPPER_NAME ..."
+    sudo cryptsetup close "$MAPPER_NAME"
+fi
+
 # ── LUKS ──
 sudo cryptsetup luksFormat "$LUKS_PART"
 sudo cryptsetup open "$LUKS_PART" "$MAPPER_NAME"
