@@ -3,86 +3,70 @@
 **Started:** 2026-05-30
 **Target:** Framework Laptop 13 AMD — NixOS 26.05 — Btrfs + LUKS
 
-## Current Phase: 🟡 DISK PREP — Config written. Waiting for YOU to unmount & partition nvme0n1
+> ⚠️ **AGENT IS EPHEMERAL** — This install environment disappears on reboot.
+> All post-reboot work must be scripted or documented for the user to run alone.
 
-### What I (the agent) am doing:
-- Writing / editing NixOS configuration files under `/home/nixos/nixos-config/`
-- Planning partition layouts and commands
-- Updating TODO.md and this PHASE.md
+---
 
-### What YOU (the user) must do:
-- Run any `sudo` commands I provide in copy-paste blocks
-- Make decisions when I ask
+## Current Phase: 🟡 DISK PREP — Config written. Waiting for YOU to run scripts.
 
-### Last Action:
-- Created modular flake architecture in `/home/nixos/nixos-config/modules/`
+### What the agent (me) does NOW:
+- Write/edit NixOS configs under `/home/nixos/nixos-config/`
+- Read generated `hardware-configuration.nix` and wire UUIDs
+- Update the flake before `nixos-install`
+- **After reboot: I AM GONE.** No verification, no fixes.
 
-### Next Action (pending your go-ahead):
-1. Unmount old LUKS partitions and close crypt containers
-2. Partition `nvme0n1` with GPT: EFI + LUKS + swap
-3. Create LUKS container, Btrfs filesystem, subvolumes
-4. Mount to `/mnt` and generate `hardware-configuration.nix`
+### What YOU must do NOW (before reboot):
+1. Run the disk partitioning scripts
+2. Say "done" after `06-generate-hardware.sh` so I can wire UUIDs
+3. Run `08-install.sh`
+4. Set root password when prompted
+5. **REBOOT** — the installer USB environment (and this agent) dies here
 
-### Commands for YOU to run:
+### What YOU must do AFTER reboot (agent is dead):
+- Run `~/nixos-config/install/scripts/09-post-install.sh` (self-contained)
+- Clone repos, activate home-manager, restore backups
+- Validate desktop, audio, network, suspend
+- Commit any config tweaks back to GitHub
+
+---
+
+## Next Action
+
 ```bash
-# Step 1: Unmount and close old LUKS
-sudo umount /run/media/nixos/7c01f71d-b98c-4afe-8715-81df7c9f97c7
-sudo cryptsetup close luks-4ee0041b-b1cf-4371-8dbb-69455fc07cae
-sudo cryptsetup close luks-c840e017-1623-4896-a1b9-ed9053eb7d9b
-
-# Step 2: Wipe and partition nvme0n1
-sudo wipefs -a /dev/nvme0n1
-sudo parted /dev/nvme0n1 -- mklabel gpt
-sudo parted /dev/nvme0n1 -- mkpart ESP fat32 1MiB 1GiB
-sudo parted /dev/nvme0n1 -- set 1 esp on
-sudo parted /dev/nvme0n1 -- mkpart primary 1GiB -16GiB   # LUKS root
-sudo parted /dev/nvme0n1 -- mkpart primary -16GiB 100%    # swap
-
-# Step 3: Format EFI
-sudo mkfs.fat -F 32 -n boot /dev/nvme0n1p1
-
-# Step 4: LUKS on main partition
-sudo cryptsetup luksFormat /dev/nvme0n1p2
-sudo cryptsetup open /dev/nvme0n1p2 cryptroot
-
-# Step 5: Btrfs with subvolumes
-sudo mkfs.btrfs -L nixos /dev/mapper/cryptroot
-sudo mount /dev/mapper/cryptroot /mnt
-sudo btrfs subvolume create /mnt/@
-sudo btrfs subvolume create /mnt/@home
-sudo btrfs subvolume create /mnt/@nix
-sudo btrfs subvolume create /mnt/@log
-sudo btrfs subvolume create /mnt/@snapshots
-sudo umount /mnt
-
-# Step 6: Mount subvolumes
-sudo mount -o subvol=@,compress=zstd:1,noatime /dev/mapper/cryptroot /mnt
-sudo mkdir -p /mnt/{home,nix,var/log,boot}
-sudo mount -o subvol=@home,compress=zstd:1,noatime /dev/mapper/cryptroot /mnt/home
-sudo mount -o subvol=@nix,compress=zstd:1,noatime /dev/mapper/cryptroot /mnt/nix
-sudo mount -o subvol=@log,compress=zstd:1,noatime /dev/mapper/cryptroot /mnt/var/log
-sudo mount /dev/nvme0n1p1 /mnt/boot
-
-# Step 7: Swap
-sudo mkswap -L swap /dev/nvme0n1p3
-sudo swapon /dev/nvme0n1p3
-
-# Step 8: Generate hardware config
-sudo nixos-generate-config --root /mnt
+cd /home/nixos/nixos-config/install/scripts
+./run-all.sh
 ```
 
-After these complete, tell me "done" and I will:
-- Read the generated `hardware-configuration.nix`
-- Update the flake UUIDs
-- Run `nixos-install` (which also requires sudo — I'll give you the command)
+This runs:
+- `01-unmount.sh` — close old LUKS
+- `02-partition.sh` — GPT layout
+- `03-luks.sh` — format LUKS
+- `04-btrfs.sh` — Btrfs subvolumes
+- `05-mount.sh` — mount to /mnt
+- `06-generate-hardware.sh` — probe hardware
+
+**PAUSES.** You read the generated hardware config, then tell me "done".
+
+I then update UUIDs and you continue with:
+- `07-copy-config.sh` — copy flake
+- `08-install.sh` — `nixos-install --flake ...`
 
 ---
-## How to see progress
-1. **In pi:** type `/status` — shows current phase inline
-2. **In pi:** type `/todo` — opens TODO.md in your editor
-3. **In pi:** type `/editor <file>` — opens any file in nano/vim
-4. **In shell:** `cat /home/nixos/PHASE.md` or `cat /home/nixos/TODO.md`
+
+## Files You Can Read Right Now
+
+| File | What it is |
+|------|-----------|
+| `install/docs/TODO.md` | Full task list, split by BEFORE/AFTER reboot |
+| `install/scripts/run-all.sh` | Orchestrator for the whole install |
+| `install/scripts/09-post-install.sh` | What you run after reboot (no agent needed) |
+| `modules/hosts/laptop/default.nix` | The host configuration |
+| `modules/system/btrfs-laptop.nix` | Btrfs mounts (UUIDs updated after step 06) |
+| `README.md` | Repo overview and quick-start |
 
 ---
+
 ## Sudo Commands Waiting
-**NONE** — I will not run sudo. I will only show you the exact commands to copy-paste.
+
+**NONE** — I do not run sudo. Run `./run-all.sh` yourself. Each destructive step asks for `yes` confirmation.
