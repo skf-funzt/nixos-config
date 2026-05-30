@@ -47,8 +47,11 @@
     variant = "";
   };
 
+  # Enable X11/Wayland for GNOME
+  services.xserver.enable = true;
+
   # ── Audio ────────────────────────────────────────────────────
-  hardware.pulseaudio.enable = false;
+  services.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
