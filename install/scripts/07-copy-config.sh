@@ -15,40 +15,51 @@ TARGET="/mnt/etc/nixos"
 
 echo "=== Step 7: Copy flake to $TARGET ==="
 
-# Read the generated hardware config and extract only hardware-specific lines
-echo "Extracting hardware-specific config from generated file..."
+# Step 1: Back up the generated hardware config before we nuke /mnt/etc/nixos
+echo "Preserving generated hardware config..."
 GENERATED="$TARGET/hardware-configuration.nix"
+GENERATED_BACKUP="/tmp/hardware-configuration.nix.generated"
 if [[ -f "$GENERATED" ]]; then
-    # Create a filtered version without fileSystems and swapDevices
-    awk '
-        /fileSystems\./ { skip=1; next }
-        /swapDevices\./ { skip=1; next }
-        skip && /^  };/ { skip=0; next }
-        skip { next }
-        { print }
-    ' "$GENERATED" > "$TARGET/hardware-configuration.nix.filtered"
+    sudo cp "$GENERATED" "$GENERATED_BACKUP"
 else
-    echo "WARNING: $GENERATED not found. Using placeholder."
+    echo "WARNING: $GENERATED not found."
 fi
 
-# Copy entire flake
-echo "Copying flake..."
-sudo cp -r "$REPO"/* "$TARGET/"
-# Preserve .git so the install target is a proper repo
-sudo cp -r "$REPO/.git" "$TARGET/" 2>/dev/null || true
+# Step 2: Wipe /mnt/etc/nixos clean so old generated files don't leak
+echo "Cleaning /mnt/etc/nixos..."
+sudo rm -rf "$TARGET"/*
+sudo rm -rf "$TARGET"/.* 2>/dev/null || true
 
-# Replace the placeholder hardware config with the filtered generated one
-if [[ -f "$TARGET/hardware-configuration.nix.filtered" ]]; then
-    sudo cp "$TARGET/hardware-configuration.nix.filtered" "$TARGET/modules/hosts/laptop/hardware-configuration.nix"
-    sudo rm -f "$TARGET/hardware-configuration.nix.filtered"
+# Step 3: Copy the entire repo (including hidden files)
+echo "Copying flake from $REPO ..."
+# Use tar to preserve hidden files, permissions, and symlinks
+sudo tar -C "$REPO" -cf - . | sudo tar -C "$TARGET" -xf -
+
+# Step 4: Filter the generated hardware config to remove fileSystems/swapDevices
+if [[ -f "$GENERATED_BACKUP" ]]; then
+    echo "Filtering generated hardware config (removing fileSystems/swapDevices)..."
+    awk '
+        # Skip fileSystems definitions: from "fileSystems." until the matching "};"
+        /fileSystems\./ { in_fs=1; next }
+        in_fs && /^  \};/ { in_fs=0; next }
+        in_fs { next }
+
+        # Skip swapDevices definitions: from "swapDevices" until the matching "];"
+        /swapDevices/ { in_swap=1; next }
+        in_swap && /^  \];/ { in_swap=0; next }
+        in_swap { next }
+
+        # Everything else: print
+        { print }
+    ' "$GENERATED_BACKUP" | sudo tee "$TARGET/modules/hosts/laptop/hardware-configuration.nix" > /dev/null
+    sudo rm -f "$GENERATED_BACKUP"
+else
+    echo "WARNING: No generated hardware config found. Placeholder left in place."
 fi
-
-# Clean up generated files from /mnt/etc/nixos root
-sudo rm -f "$TARGET/configuration.nix" "$TARGET/hardware-configuration.nix" "$TARGET/hardware-configuration.nix.generated" 2>/dev/null || true
 
 echo ""
 echo "Next: update UUIDs in modules/system/btrfs-laptop.nix"
-echo "  Look for the Btrfs device UUID in the filtered hardware config"
-echo "  or run: sudo blkid /dev/mapper/cryptroot"
+echo "  Run: sudo blkid /dev/mapper/cryptroot"
+echo "  Then edit: $TARGET/modules/system/btrfs-laptop.nix"
 echo ""
 echo "Then run ./08-install.sh"

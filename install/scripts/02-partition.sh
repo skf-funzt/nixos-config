@@ -6,6 +6,9 @@ set -euo pipefail
 #   p1: EFI System Partition (FAT32, 1 GiB)
 #   p2: LUKS root partition (rest - 16 GiB)
 #   p3: Swap partition (last 16 GiB)
+#
+# Uses sgdisk (from gptfdisk) which auto-aligns partitions to
+# optimal boundaries — no manual alignment warnings.
 
 TARGET_DISK="/dev/nvme0n1"
 
@@ -17,17 +20,15 @@ if [[ "$CONFIRM" != "yes" ]]; then
     exit 1
 fi
 
-echo "Wiping filesystem signatures..."
-sudo wipefs -a "$TARGET_DISK"
+echo "Wiping partition table..."
+sudo sgdisk -Z "$TARGET_DISK"
 
-echo "Creating GPT label and partitions..."
-sudo parted "$TARGET_DISK" -- mklabel gpt
-sudo parted "$TARGET_DISK" -- mkpart ESP fat32 1MiB 1GiB
-sudo parted "$TARGET_DISK" -- set 1 esp on
-sudo parted "$TARGET_DISK" -- mkpart primary 1GiB -16GiB
-sudo parted "$TARGET_DISK" -- mkpart primary -16GiB 100%
+echo "Creating partitions with sgdisk (auto-aligned)..."
+sudo sgdisk -n 1:0:+1G   -t 1:ef00 -c 1:"EFI"   "$TARGET_DISK"
+sudo sgdisk -n 2:0:-16G  -t 2:8300 -c 2:"LUKS"  "$TARGET_DISK"
+sudo sgdisk -n 3:0:0     -t 3:8200 -c 3:"swap"  "$TARGET_DISK"
 
 echo "Partition layout:"
-sudo parted "$TARGET_DISK" -- print
+sudo sgdisk -p "$TARGET_DISK"
 
 echo "Done. Run ./03-luks.sh next."
