@@ -30,10 +30,14 @@ cat <<'BANNER'
 BANNER
 
 echo "Available steps:"
-ls -1 "$SCRIPTS"/*.sh | while read -r f; do
+ls -1 "$SCRIPTS"/[0-9]*.sh | while read -r f; do
     name=$(basename "$f")
     echo "  $name"
 done
+echo "  run-all.sh           (orchestrates all numbered scripts)"
 
 echo ""
-echo "Run each step in order. Every script asks for confirmation before destructive actions."
+echo "Quick start:"
+echo "  ./scripts/run-all.sh"
+echo ""
+echo "Or run each step in order. Every script asks for confirmation before destructive actions."

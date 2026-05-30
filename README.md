@@ -47,24 +47,31 @@ Multi-host NixOS flake with modular architecture for the Framework Laptop 13 AMD
 
 Boot the NixOS installer USB, then:
 
+### Option A: Run all steps automatically
+
 ```bash
-# Clone this repo
 git clone https://github.com/skf-funzt/nixos-config.git /home/nixos/nixos-config
 cd /home/nixos/nixos-config/install/scripts
+./run-all.sh
+```
 
-# Run each step in order
+`run-all.sh` executes every numbered script in order and pauses after `06-generate-hardware.sh` so you can update UUIDs in `modules/system/btrfs-laptop.nix` before continuing.
+
+### Option B: Run each step manually
+
+```bash
+cd /home/nixos/nixos-config/install/scripts
 ./01-unmount.sh
 ./02-partition.sh
 ./03-luks.sh
 ./04-btrfs.sh
 ./05-mount.sh
 ./06-generate-hardware.sh
-./07-copy-config.sh
 
 # Edit modules/system/btrfs-laptop.nix with UUIDs from generated hardware config
-# Then:
-./08-install.sh
 
+./07-copy-config.sh
+./08-install.sh
 # Reboot into new system, then:
 ./09-post-install.sh
 ```
