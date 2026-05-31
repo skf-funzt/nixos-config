@@ -1,22 +1,20 @@
 # modules/system/disko-laptop.nix
 # Declarative disk partitioning with Disko.
-# Imported by the host config so the layout is part of the system declaration.
-# During installation, Disko reads this config to partition/format/mount.
+# This is a STANDALONE disko configuration (not a NixOS module).
+# It is imported by the host config via `inputs.disko.nixosModules.disko`.
 #
 # INSTALL WORKFLOW with Disko:
 #   1. Boot NixOS installer USB
 #   2. Set LUKS password:  echo -n "your-password" > /tmp/luks-password
-#   3. Run:  nix run 'github:nix-community/disko/latest#disko-install' -- \
-#              --flake .#framework-stephan --disk main /dev/nvme0n1
-#   4. Reboot
+#   3. Run:  nix run 'github:nix-community/disko/latest#disko' -- \
+#              --mode destroy,format,mount ./modules/system/disko-laptop.nix
+#   4. Run nixos-install
 #
 # DEVICE: /dev/nvme0n1 (3.7T NVMe)
 # LAYOUT:
 #   p1  EFI      1G   vfat   /boot
 #   p2  LUKS     rest-96G  Btrfs subvolumes: @ @home @nix @log @snapshots
 #   p3  swap     96G  swap   hibernation resume
-
-{ config, lib, pkgs, ... }:
 
 {
   disko.devices = {
@@ -41,7 +39,7 @@
 
             # ── LUKS root partition ──
             luks = {
-              size = "100%";  # Takes remaining space after swap reservation
+              size = "100%";
               content = {
                 type = "luks";
                 name = "cryptroot";
@@ -80,11 +78,11 @@
 
             # ── Swap partition ──
             swap = {
-              size = "96G";  # Match RAM for hibernation
+              size = "96G";
               type = "8200";
               content = {
                 type = "swap";
-                resumeDevice = true;  # Enable hibernation resume
+                resumeDevice = true;
               };
             };
           };
