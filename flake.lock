@@ -94,6 +94,26 @@
         "type": "github"
       }
     },
+    "disko": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1780048612,
+        "narHash": "sha256-Md/eOK5OjmvvHc2H52pLZe4zpP4XyfiS5vHqfRCz2HU=",
+        "owner": "nix-community",
+        "repo": "disko",
+        "rev": "caa775cf67bfdc47f940edd96c975b5016df9059",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "disko",
+        "type": "github"
+      }
+    },
     "firefox-gnome-theme": {
       "flake": false,
       "locked": {
@@ -797,6 +817,7 @@
     },
     "root": {
       "inputs": {
+        "disko": "disko",
         "handy": "handy",
         "home-manager": "home-manager",
         "khanelivim": "khanelivim",

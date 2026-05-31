@@ -1,18 +1,22 @@
 # modules/system/disko-laptop.nix
 # Declarative disk partitioning with Disko.
-# This replaces the install/scripts/01-09.sh shell scripts.
-# Usage (from NixOS installer):
-#   nix run 'github:nix-community/disko/latest#disko-install' -- \
-#     --flake /path/to/this/repo#framework-stephan \
-#     --disk main /dev/nvme0n1
+# Imported by the host config so the layout is part of the system declaration.
+# During installation, Disko reads this config to partition/format/mount.
 #
-# Or manually:
-#   nix run 'github:nix-community/disko/latest#disko' -- \
-#     --mode destroy,format,mount /path/to/this/file.nix
+# INSTALL WORKFLOW with Disko:
+#   1. Boot NixOS installer USB
+#   2. Set LUKS password:  echo -n "your-password" > /tmp/luks-password
+#   3. Run:  nix run 'github:nix-community/disko/latest#disko-install' -- \
+#              --flake .#framework-stephan --disk main /dev/nvme0n1
+#   4. Reboot
 #
-# NOTE: This is NOT imported by default in the host config.
-# It is used only during initial installation via Disko.
-{ config, pkgs, lib, ... }:
+# DEVICE: /dev/nvme0n1 (3.7T NVMe)
+# LAYOUT:
+#   p1  EFI      1G   vfat   /boot
+#   p2  LUKS     rest-96G  Btrfs subvolumes: @ @home @nix @log @snapshots
+#   p3  swap     96G  swap   hibernation resume
+
+{ config, lib, pkgs, ... }:
 
 {
   disko.devices = {
@@ -37,16 +41,14 @@
 
             # ── LUKS root partition ──
             luks = {
-              size = "100%";  # Uses remaining space minus swap
+              size = "100%";  # Takes remaining space after swap reservation
               content = {
                 type = "luks";
                 name = "cryptroot";
-                # Ask for password interactively during disko
+                passwordFile = "/tmp/luks-password";
                 settings = {
                   allowDiscards = true;
                 };
-                # Password is prompted at format time
-                passwordFile = "/tmp/luks-password";
                 content = {
                   type = "btrfs";
                   extraArgs = [ "-L" "nixos" "-f" ];

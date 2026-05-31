@@ -42,9 +42,15 @@
       url = "github:noctalia-dev/noctalia-shell";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # ── Disko (declarative disk partitioning) ────────────────
+    disko = {
+      url = "github:nix-community/disko";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = inputs@{ self, nixpkgs, nixpkgs-unstable, home-manager, nixos-hardware, stylix, nixgl, handy, khanelivim, nvf, noctalia, ... }:
+  outputs = inputs@{ self, nixpkgs, nixpkgs-unstable, home-manager, nixos-hardware, stylix, nixgl, handy, khanelivim, nvf, noctalia, disko, ... }:
     let
       system = "x86_64-linux";
 

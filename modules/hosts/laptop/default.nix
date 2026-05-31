@@ -5,7 +5,8 @@
     ./hardware-configuration.nix
     inputs.nixos-hardware.nixosModules.framework-13-7040-amd
     inputs.home-manager.nixosModules.home-manager
-    ../../system/btrfs-laptop.nix
+    inputs.disko.nixosModules.disko
+    ../../system/disko-laptop.nix    # Declarative disk partitioning (replaces btrfs-laptop.nix)
     ../../desktop/gnome.nix
     ../../desktop/niri.nix
     ../../users/stephan.nix
@@ -41,13 +42,11 @@
     LC_TIME = "de_DE.UTF-8";
   };
 
-  # ── Console / Keymap ─────────────────────────────────────────
+  # ── Console / Keymap / X11 ───────────────────────────────────
   services.xserver.xkb = {
     layout = "us";
     variant = "";
   };
-
-  # Enable X11/Wayland for GNOME
   services.xserver.enable = true;
 
   # ── Audio ────────────────────────────────────────────────────
@@ -136,12 +135,6 @@
   nix.gc.options = "--delete-older-than 30d";
   nix.optimise.automatic = true;
 
-  # ── Home Manager Shared Modules ──────────────────────────────
-  home-manager.sharedModules = [
-    inputs.stylix.homeModules.stylix
-    inputs.noctalia.homeModules.default
-  ];
-
   # ── Home Manager Special Args ────────────────────────────────
   home-manager.extraSpecialArgs = {
     inherit inputs pkgs-unstable;
@@ -152,6 +145,12 @@
     noctalia = inputs.noctalia;
     nixvim = inputs.khanelivim;
   };
+
+  # ── Home Manager Shared Modules ──────────────────────────────
+  home-manager.sharedModules = [
+    inputs.stylix.homeModules.stylix
+    inputs.noctalia.homeModules.default
+  ];
 
   # ── State Version ────────────────────────────────────────────
   system.stateVersion = "26.05";
