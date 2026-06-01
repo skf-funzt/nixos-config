@@ -13,6 +13,7 @@
 
 let
   vscode-wrapped = import ./vscode.nix { inherit pkgs pkgs-unstable; };
+  pi-wrapped = import ./pi.nix { inherit pkgs pkgs-unstable; };
   handy-wrapped = import ./handy-wrapped.nix { inherit pkgs handy; };
 
   ollamaPackage =
@@ -101,7 +102,7 @@ in
     pkgs.github-desktop
     pkgs-unstable.opencode
     pkgs-unstable.github-copilot-cli
-    pkgs-unstable.pi-coding-agent
+    pi-wrapped
     pkgs.bashInteractive
     pkgs.byobu
 
