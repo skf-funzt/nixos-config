@@ -1,16 +1,27 @@
 # home/packages.nix
 # User-level packages for stephan.
-{ config, pkgs, pkgs-unstable, nixgl, handy, khanelivim, gpuType ? "amd", ... }:
+{
+  config,
+  pkgs,
+  pkgs-unstable,
+  nixgl,
+  handy,
+  khanelivim,
+  gpuType ? "amd",
+  ...
+}:
 
 let
   vscode-wrapped = import ./vscode.nix { inherit pkgs pkgs-unstable; };
   handy-wrapped = import ./handy-wrapped.nix { inherit pkgs handy; };
 
-  ollamaPackage = {
-    amd = pkgs-unstable.ollama-rocm;
-    nvidia = pkgs-unstable.ollama-cuda;
-    cpu = pkgs-unstable.ollama;
-  }.${gpuType};
+  ollamaPackage =
+    {
+      amd = pkgs-unstable.ollama-rocm;
+      nvidia = pkgs-unstable.ollama-cuda;
+      cpu = pkgs-unstable.ollama;
+    }
+    .${gpuType};
 in
 {
   home.packages = [
@@ -35,8 +46,8 @@ in
     pkgs.papirus-icon-theme
 
     # ── Terminal emulators ──
-    (config.lib.nixGL.wrap pkgs.alacritty)
-    (config.lib.nixGL.wrap pkgs.kitty)
+    pkgs.alacritty
+    pkgs.kitty
 
     # ── System tools ──
     pkgs.tldr
@@ -56,6 +67,7 @@ in
 
     # ── Browsers ──
     (config.lib.nixGL.wrap pkgs.firefox)
+    pkgs.google-chrome
 
     # ── Media / Creative ──
     pkgs.spotify
@@ -95,7 +107,7 @@ in
 
     # ── Key / Management ──
     pkgs.infisical
-    pkgs.logseq
+    # pkgs.logseq
     pkgs.zotero
     pkgs-unstable.super-productivity
 
@@ -106,17 +118,18 @@ in
           (khanelivim.lib.mkNixvimConfig {
             system = pkgs.system;
             profile = "standard";
-          }).extendModules {
-            modules = [
-              {
-                khanelivim.integrations.accountBacked = {
-                  enable = true;
-                  ai.enable = true;
-                  timeTracking.enable = false;
-                };
-              }
-            ];
-          };
+          }).extendModules
+            {
+              modules = [
+                {
+                  khanelivim.integrations.accountBacked = {
+                    enable = true;
+                    ai.enable = true;
+                    timeTracking.enable = false;
+                  };
+                }
+              ];
+            };
       in
       customKhanelivimConfig.config.build.package
     )

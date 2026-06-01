@@ -1,12 +1,20 @@
 # modules/hosts/laptop/default.nix
 # Framework Laptop 13 AMD (7040 series)
-{ config, pkgs, lib, inputs, pkgs-unstable, ... }: {
+{
+  config,
+  pkgs,
+  lib,
+  inputs,
+  pkgs-unstable,
+  ...
+}:
+{
   imports = [
     ./hardware-configuration.nix
     inputs.nixos-hardware.nixosModules.framework-13-7040-amd
     inputs.home-manager.nixosModules.home-manager
     inputs.disko.nixosModules.disko
-    ../../system/disko-laptop.nix    # Declarative disk partitioning (replaces btrfs-laptop.nix)
+    ../../system/disko-laptop.nix # Declarative disk partitioning (replaces btrfs-laptop.nix)
     ../../desktop/gnome.nix
     ../../desktop/niri.nix
     ../../users/stephan.nix
@@ -26,7 +34,10 @@
   # ── Networking ───────────────────────────────────────────────
   networking.hostName = "framework-stephan";
   networking.networkmanager.enable = true;
-
+  networking.wireless = {
+    enable = true;
+    userControlled = true;
+  };
   # ── Locale / Time ────────────────────────────────────────────
   time.timeZone = "Europe/Berlin";
   i18n.defaultLocale = "en_US.UTF-8";
@@ -63,8 +74,8 @@
   services.printing.enable = true;
 
   # ── VM Guest (useful for Boxes/QEMU) ───────────────────────
-  services.spice-webdavd.enable = true;
-  services.spice-vdagentd.enable = true;
+  # services.spice-webdavd.enable = true;
+  # services.spice-vdagentd.enable = true;
 
   # ── Root ─────────────────────────────────────────────────────
   users.users.root = {
@@ -74,9 +85,9 @@
   # ── Packages ─────────────────────────────────────────────────
   nixpkgs.config = {
     allowUnfree = true;
-    permittedInsecurePackages = [
-      "electron-39.8.10"
-    ];
+    #   permittedInsecurePackages = [
+    #     "electron-39.8.10"
+    #   ];
   };
 
   environment.systemPackages = with pkgs; [
@@ -94,25 +105,27 @@
     nerd-fonts.fira-code
     fira-code
     roboto
-    google-chrome
-    vscode
+    # google-chrome
+    # vscode
     nil
-    spotify
-    drawing
-    gimp
-    inkscape
-    krita
-    darktable
-    blender
-    kdePackages.kdenlive
-    obs-studio
-    discord
-    distrobox
+    # spotify
+    # drawing
+    # gimp
+    # inkscape
+    # krita
+    # darktable
+    # blender
+    # kdePackages.kdenlive
+    # obs-studio
+    # discord
+    # distrobox
     podman-desktop
     yazi
     tldr
     websocat
     stress
+    pciutils
+    usbutils
   ];
 
   # ── Programs ─────────────────────────────────────────────────
@@ -130,7 +143,10 @@
   virtualisation.podman.dockerSocket.enable = true;
 
   # ── Nix Settings ─────────────────────────────────────────────
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
   nix.gc.automatic = true;
   nix.gc.options = "--delete-older-than 30d";
   nix.optimise.automatic = true;
