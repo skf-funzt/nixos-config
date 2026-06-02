@@ -14,6 +14,7 @@
     inputs.nixos-hardware.nixosModules.framework-13-7040-amd
     inputs.home-manager.nixosModules.home-manager
     inputs.disko.nixosModules.disko
+    inputs.dms.nixosModules.dank-material-shell
     ../../system/disko-laptop.nix # Declarative disk partitioning (replaces btrfs-laptop.nix)
     ../../desktop/gnome.nix
     ../../desktop/niri.nix
@@ -54,11 +55,14 @@
   };
 
   # ── Console / Keymap / X11 ───────────────────────────────────
-  services.xserver.xkb = {
-    layout = "us";
-    variant = "";
+  services.xserver = {
+    enable = true;
+    exportConfiguration = true; # Required for Wayland/GNOME to read XKB options
+    xkb = {
+      layout = "us"; # Change to your layout
+      options = "compose:ralt"; # Sets Right Alt as the Compose Key
+    };
   };
-  services.xserver.enable = true;
 
   # ── Audio ────────────────────────────────────────────────────
   services.pulseaudio.enable = false;
@@ -72,7 +76,13 @@
 
   # ── Printing ─────────────────────────────────────────────────
   services.printing.enable = true;
-
+  services.printing.drivers = [
+    # pkgs.gutenprint
+    # pkgs.gutenprintBin
+    pkgs.cups-bjnp # This contains the the driver for Canon MX450
+    # pkgs.canon-cups-ufr2
+    # pkgs.carps-cups
+  ];
   # ── VM Guest (useful for Boxes/QEMU) ───────────────────────
   # services.spice-webdavd.enable = true;
   # services.spice-vdagentd.enable = true;
