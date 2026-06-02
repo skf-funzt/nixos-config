@@ -37,20 +37,35 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
-    # ── Shell / Status Bar ───────────────────────────────────
-    noctalia = {
-      url = "github:noctalia-dev/noctalia-shell";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     # ── Disko (declarative disk partitioning) ────────────────
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # ── DankMaterialShell (Wayland desktop shell) ────────────
+    dms = {
+      url = "github:AvengeMedia/DankMaterialShell/stable";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = inputs@{ self, nixpkgs, nixpkgs-unstable, home-manager, nixos-hardware, stylix, nixgl, handy, khanelivim, nvf, noctalia, disko, ... }:
+  outputs =
+    inputs@{
+      self,
+      nixpkgs,
+      nixpkgs-unstable,
+      home-manager,
+      nixos-hardware,
+      stylix,
+      nixgl,
+      handy,
+      khanelivim,
+      nvf,
+      disko,
+      dms,
+      ...
+    }:
     let
       system = "x86_64-linux";
 
@@ -66,21 +81,21 @@
       # ── NixOS Modules (reusable across hosts) ──────────────────
       nixosModules = {
         system-btrfs-laptop = ./modules/system/btrfs-laptop.nix;
-        desktop-gnome       = ./modules/desktop/gnome.nix;
-        desktop-niri        = ./modules/desktop/niri.nix;
-        user-stephan        = ./modules/users/stephan.nix;
+        desktop-gnome = ./modules/desktop/gnome.nix;
+        desktop-niri = ./modules/desktop/niri.nix;
+        user-stephan = ./modules/users/stephan.nix;
       };
 
       # ── Home Manager Modules (reusable across users) ───────────
       homeModules = {
-        core          = ./home/core.nix;
-        theme         = ./home/theme.nix;
-        packages      = ./home/packages.nix;
-        programs      = ./home/programs.nix;
+        core = ./home/core.nix;
+        theme = ./home/theme.nix;
+        packages = ./home/packages.nix;
+        programs = ./home/programs.nix;
         desktop-gnome = ./home/desktop-gnome.nix;
-        desktop-niri  = ./home/desktop-niri.nix;
-        zsh           = ./home/zsh.nix;
-        nixvim        = ./home/nixvim.nix;
+        desktop-niri = ./home/desktop-niri.nix;
+        zsh = ./home/zsh.nix;
+        nixvim = ./home/nixvim.nix;
       };
 
       # ── NixOS Configurations ───────────────────────────────────

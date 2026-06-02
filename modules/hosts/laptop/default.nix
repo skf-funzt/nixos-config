@@ -148,6 +148,15 @@
   programs.git.lfs.enable = true;
   programs.git.prompt.enable = true;
 
+  # ── DankMaterialShell ────────────────────────────────────────
+  programs.dank-material-shell = {
+    enable = true;
+    systemd = {
+      enable = true;
+      restartIfChanged = true;
+    };
+  };
+
   # ── Virtualisation ───────────────────────────────────────────
   virtualisation.podman.enable = true;
   virtualisation.podman.dockerSocket.enable = true;
@@ -168,14 +177,14 @@
     handy = inputs.handy;
     khanelivim = inputs.khanelivim;
     gpuType = "amd";
-    noctalia = inputs.noctalia;
+    dms = inputs.dms;
     nixvim = inputs.khanelivim;
   };
 
   # ── Home Manager Shared Modules ──────────────────────────────
   home-manager.sharedModules = [
     inputs.stylix.homeModules.stylix
-    inputs.noctalia.homeModules.default
+    inputs.dms.homeModules.dank-material-shell
   ];
 
   # ── State Version ────────────────────────────────────────────

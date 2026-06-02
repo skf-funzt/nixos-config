@@ -11,6 +11,7 @@
     ./programs.nix      # Program configurations (tmux, git, chromium, noctalia)
     ./zsh.nix           # Zsh shell
     ./nixvim.nix        # Nixvim (currently disabled)
+    ./desktop-niri.nix  # Niri config (managed via xdg.configFile)
     # NOTE: noctalia is imported via home-manager.sharedModules in the host config
     # Do NOT import it here or it will conflict.
   ];
