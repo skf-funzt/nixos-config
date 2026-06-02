@@ -102,7 +102,7 @@
 
   environment.systemPackages = with pkgs; [
     vim
-    alacritty
+    kitty
     oh-my-posh
     starship
     btop

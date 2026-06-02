@@ -8,4 +8,13 @@
   # Minimal niri config — keybindings, input, layout
   # DMS handles the shell (bars, panels, widgets)
   xdg.configFile."niri/config.kdl".source = ./niri-config.kdl;
+
+  # Kitty terminal with DMS dynamic theming
+  programs.kitty = {
+    enable = true;
+    extraConfig = ''
+      include dank-tabs.conf
+      include dank-theme.conf
+    '';
+  };
 }
