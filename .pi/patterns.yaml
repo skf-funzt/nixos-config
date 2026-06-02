@@ -1,0 +1,10 @@
+strictModeWhiteList:
+  - ^ls\b
+  - ^echo\b
+  - ^which\b
+  - ^find\b
+  - ^cd\b
+  - ^git ls-files\b
+  - ^git status\b
+  - ^git diff\b
+  - ^ps\b
