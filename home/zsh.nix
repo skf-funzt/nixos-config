@@ -202,12 +202,12 @@
     # Some references:
     # https://github.com/nix-community/home-manager/issues/4658#issuecomment-2658516367
     # https://nix.dev/manual/nix/2.18/language/builtins#builtins-fromTOML
-    # https://starship.rs/presets/gruvbox-rainbow
+    # https://starship.rs/presets/catppuccin-powerline
     # https://starship.rs/installing/#nix
     #
     #
     settings = lib.mkForce (
-      builtins.fromTOML (builtins.readFile "${pkgs.starship}/share/starship/presets/gruvbox-rainbow.toml")
+      builtins.fromTOML (builtins.readFile "${pkgs.starship}/share/starship/presets/catppuccin-powerline.toml")
     );
   };
 
