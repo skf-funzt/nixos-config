@@ -167,6 +167,7 @@
   fileSystems."/.snapshots" = {
     device = "/snapshots";
     options = [ "bind" ];
+    fsType = "none";
   };
 
   services.snapper = {
