@@ -7,4 +7,17 @@ strictModeWhiteList:
   - ^git ls-files\b
   - ^git status\b
   - ^git diff\b
+  - ^git add\b
+  - ^git commit\b
+  - ^git log\b
   - ^ps\b
+  - ^pstree\b
+  - ^stat\b
+  - ^file\b
+  - ^head\b
+  - ^tail\b
+  - ^grep\b
+  - ^sed\b
+  - ^cat\b
+  - ^mkdir\b
+  - ^curl\b

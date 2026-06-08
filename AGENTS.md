@@ -1,113 +1,111 @@
-# NixOS Install Session Context
+# NixOS Dendritic Config — Agent Context
 
 > This file preserves knowledge across agent sessions.
-> After reboot, `cd ~/nixos-config` in pi to reload this context.
+> After reboot, `cd /etc/nixos` in pi to reload this context.
 
 ## Current Project
 
-**NixOS 26.05 reinstall on Framework Laptop 13 AMD**
-- Disk: 3.7T NVMe (KINGSTON SKC3000D4096G)
-- Layout: GPT → EFI (1G) + LUKS + Btrfs subvolumes (@ @home @nix @log @snapshots) + swap (16G)
-- Desktop: GNOME + Niri (Wayland compositor)
+**NixOS 26.05 on Framework Laptop 13 AMD**
+- Desktop: GNOME + Niri (Wayland compositor) + DMS (DankMaterialShell)
 - Home Manager: Integrated as NixOS module (dendritic pattern)
+- Flake: Unified flake with NixOS + home-manager + custom inputs
 
 ## Architecture (Dendritic)
 
 ```
 nixos-config/
-├── flake.nix                           # Unified flake: NixOS + home-manager inputs
+├── flake.nix                           # Flake: all inputs + outputs
+├── flake.lock                          # Pinned inputs
+├── AGENTS.md                           # This file — session context
 ├── modules/
 │   ├── hosts/
 │   │   └── laptop/
-│   │       ├── default.nix             # Host config: boot, network, audio, packages
-│   │       └── hardware-configuration.nix  # Generated during install
+│   │       ├── default.nix             # Host config: boot, DMS, packages, home-manager
+│   │       └── hardware-configuration.nix
 │   ├── system/
-│   │   └── btrfs-laptop.nix            # Btrfs subvol mounts (UUIDs wired after step 06)
+│   │   └── disko-laptop.nix            # Declarative disk partitioning
 │   ├── users/
-│   │   └── stephan.nix                 # User account + home-manager import
+│   │   └── stephan.nix                 # User + home-manager import
 │   └── desktop/
-│       ├── gnome.nix                   # GNOME desktop environment
-│       └── niri.nix                    # Niri Wayland compositor
+│       ├── gnome.nix                   # GNOME desktop
+│       └── niri.nix                    # Niri compositor + greetd
 ├── home/
-│   ├── stephan.nix                     # Main home-manager config
-│   ├── zsh.nix                         # Zsh shell config
-│   ├── nixvim.nix                      # Nixvim (neovim) config
+│   ├── stephan.nix                     # Home-manager entry point (imports all home modules)
+│   ├── core.nix                        # Base: user info, xdg, session vars
+│   ├── theme.nix                       # Stylix, cursor, GTK, fonts
+│   ├── packages.nix                    # User-level packages
+│   ├── programs.nix                    # Generic program configs (tmux, git, chromium)
+│   ├── desktop-niri.nix                # Niri-specific home config (niri config.kdl, kitty DMS theme)
+│   ├── desktop-gnome.nix               # GNOME-specific home config
+│   ├── niri-config.kdl                 # Niri compositor config file
+│   ├── zsh.nix                         # Zsh shell
+│   ├── nixvim.nix                      # Nixvim (currently disabled)
 │   ├── vscode.nix                      # VS Code wrapper
-│   ├── noctalia.nix                    # Noctalia status bar
 │   ├── handy-wrapped.nix               # Handy AI tool wrapper
-│   ├── gruvbox-rainbow.toml            # Terminal color scheme
-│   └── gnome-background.webp           # Wallpaper asset
+│   └── gruvbox-rainbow.toml            # Terminal color scheme
 ├── install/
-│   ├── install.sh                      # Quick reference
-│   ├── scripts/
-│   │   ├── 01-unmount.sh               # Close old LUKS containers
-│   │   ├── 02-partition.sh             # GPT: EFI + LUKS + swap
-│   │   ├── 03-luks.sh                  # LUKS format & open
-│   │   ├── 04-btrfs.sh                 # Btrfs filesystem + subvolumes
-│   │   ├── 05-mount.sh                 # Mount to /mnt
-│   │   ├── 06-generate-hardware.sh     # nixos-generate-config
-│   │   ├── 07-copy-config.sh           # Copy flake → /mnt/etc/nixos
-│   │   ├── 08-install.sh               # nixos-install --flake
-│   │   ├── 09-post-install.sh          # First-boot checklist
-│   │   └── run-all.sh                  # Orchestrates 01→08 with pause for UUIDs
-│   └── docs/
-│       ├── PHASE.md                    # Current install phase
-│       └── TODO.md                     # Full task list (BEFORE / AFTER reboot)
+│   ├── scripts/                        # Install scripts (01–09)
+│   ├── docs/
+│   │   ├── PHASE.md
+│   │   └── TODO.md
 └── .pi/
-    └── extensions/
-        ├── editor.ts                   # Pi extension: /editor command
-        └── nixos-install-status.ts     # Pi extension: /status command
+    ├── patterns.yaml                   # Pi strict-mode whitelist
+    └── extensions/                     # Pi extensions (editor, etc.)
 ```
 
 ## Key Decisions
 
 1. **One unified repo**: home-manager merged into nixos-config (not standalone).
-   Previously home-manager was a separate repo; now it's modules + home/ inside nixos-config.
+   Special args passed via `home-manager.extraSpecialArgs`.
 
-2. **Home-manager as NixOS module**: Uses `home-manager.nixosModules.home-manager` in host config.
-   Special args (pkgs-unstable, nixgl, khanelivim, etc.) passed via `home-manager.extraSpecialArgs`.
+2. **Home-manager as NixOS module**: Uses `home-manager.nixosModules.home-manager`.
+   User config lives in `home/stephan.nix` with focused sub-modules.
 
-3. **Old files removed**: configuration.nix, hardware-configuration.nix (root), home.nix (broken symlink),
-   justfile, .tool-versions, vm.nix, zsh.nix (root), nixos-config.code-workspace.
+3. **Desktop-shell separation**: 
+   - Niri is the compositor (window management, workspaces)
+   - DMS (DankMaterialShell) is the desktop shell (bars, panels, widgets)
+   - DMS auto-starts via `systemd.enable = true` (not via niri spawn)
+   - DMS NixOS module: `inputs.dms.nixosModules.dank-material-shell`
+   - DMS home-manager module: `inputs.dms.homeModules.dank-material-shell` (sharedModules)
 
-4. **sdb (1TB) left alone**: Physically disconnected by user. Backup verified complete via rsync.
+4. **Desktop-specific home configs**: `home/desktop-niri.nix` holds niri config + DMS-themed kitty.
+   Not in `programs.nix` — keeps generic and desktop-specific concerns separated.
 
-5. **No server-admin user**: This is a laptop, not the hybrid-pc. Only `stephan` user.
+5. **No Noctalia**: Replaced by DMS. All noctalia references removed from config.
 
-## Install Progress
+6. **Greetd with niri-session**: `tuigreet --cmd niri-session` starts the proper systemd target
+   so user services (like DMS) auto-start.
 
-### BEFORE Reboot (Agent Active)
-- [x] Repo restructured to dendritic pattern
-- [x] Home-manager configs merged into repo
-- [x] Install scripts written (01→09 + run-all.sh)
-- [x] Old files cleaned
-- [ ] Disk partitioning (user runs `./run-all.sh`)
-- [ ] Hardware config generated
-- [ ] UUIDs wired into btrfs-laptop.nix
-- [ ] nixos-install
-- [ ] Reboot
+7. **sdb (1TB) left alone**: Physically disconnected. Backup via rsync.
 
-### AFTER Reboot (Agent Gone — User Only)
-- [ ] Run `~/nixos-config/install/scripts/09-post-install.sh`
-- [ ] Clone repos (already local, but verify)
-- [ ] Activate home-manager
-- [ ] Restore backup data from sdb1
-- [ ] Validate desktop environments (GNOME, Niri)
-- [ ] Test audio, Wi-Fi, Bluetooth, suspend
-- [ ] Commit any post-install tweaks
+## Dendritic Pattern Rules (from experience)
+
+1. **Host config** (`modules/hosts/laptop/default.nix`): System-level settings, packages, NixOS module imports, DMS enable, home-manager extraSpecialArgs + sharedModules
+2. **Desktop modules** (`modules/desktop/`): Compositor/greeter config, one per DE
+3. **User module** (`modules/users/stephan.nix`): User account + home-manager entry point
+4. **Home modules** (`home/*.nix`): Each file = one concern domain (shell, programs, theme, etc.)
+5. **Desktop-specific home config**: Goes in `home/desktop-*.nix`, not in generic modules
+6. **DMS settings**: NixOS module for system-wide install; home-manager module (sharedModules) for per-user settings, plugins, niri integration
+7. **Program config with DMS dependency**: Lives alongside DMS config (desktop-niri.nix), not in programs.nix
+
+## Session State
+
+- DMS installed and running with interactive styling (settings not managed by Nix — yet)
+- Minimal niri config deployed via xdg.configFile (keybindings: Mod+T→kitty, Mod+D→DMS spotlight)
+- Kitty configured with DMS dynamic theming
+- Rebuild: `nh os switch /etc/nixos -H $(uname -n)` (host-agnostic)
+- Git: changes must be committed to be seen by flake evaluation
 
 ## How to Resume This Session After Reboot
 
 ```bash
-cd ~/nixos-config
+cd /etc/nixos
 # pi will auto-load AGENTS.md and .pi/extensions/
 ```
 
-If you need to continue install work inside the installer USB (before reboot),
-the agent configs are also in this repo under `.pi/`.
-
 ## External References
 
-- **Backup verified**: `rsync -ani` showed no diffs between old home and backup-20260527
-- **Home-manager standalone repo**: https://github.com/skf-funzt/home-manager (archived / superseded)
-- **Original guide**: `~/Downloads/NixOS Multi-DE & Btrfs Architecture Guide.md`
+- DMS docs: https://danklinux.com/docs/dankmaterialshell/
+- Niri docs: https://niri-wm.github.io/niri/
+- Noctalia (removed): was at github:noctalia-dev/noctalia-shell
+- Old home-manager repo: https://github.com/skf-funzt/home-manager (archived)
