@@ -48,7 +48,7 @@ binds {
     Mod+K     { focus-window-up; }
     Mod+L     { focus-column-right; }
 
-    // Move windows
+    // Move windows within workspace
     Mod+Ctrl+Left  { move-column-left; }
     Mod+Ctrl+Down  { move-window-down; }
     Mod+Ctrl+Up    { move-window-up; }
@@ -57,6 +57,22 @@ binds {
     Mod+Ctrl+J     { move-window-down; }
     Mod+Ctrl+K     { move-window-up; }
     Mod+Ctrl+L     { move-column-right; }
+
+    // Move column to next/previous workspace
+    Mod+Ctrl+Shift+Down  { move-column-to-workspace-down; }
+    Mod+Ctrl+Shift+Up    { move-column-to-workspace-up; }
+    Mod+Ctrl+Shift+J     { move-column-to-workspace-down; }
+    Mod+Ctrl+Shift+K     { move-column-to-workspace-up; }
+
+    // Switch preset column widths
+    Mod+R     { switch-preset-column-width; }
+    Mod+Shift+R { switch-preset-column-width-back; }
+
+    // Consume or expel window left/right
+    Mod+Shift+Left  { consume-or-expel-window-left; }
+    Mod+Shift+Right { consume-or-expel-window-right; }
+    Mod+Shift+H     { consume-or-expel-window-left; }
+    Mod+Shift+L     { consume-or-expel-window-right; }
 
     // Workspaces
     Mod+Page_Down { focus-workspace-down; }
@@ -71,7 +87,7 @@ binds {
     Mod+8 { focus-workspace 8; }
     Mod+9 { focus-workspace 9; }
 
-    // Move to workspace
+    // Move column to workspace (numbered)
     Mod+Ctrl+1 { move-column-to-workspace 1; }
     Mod+Ctrl+2 { move-column-to-workspace 2; }
     Mod+Ctrl+3 { move-column-to-workspace 3; }
