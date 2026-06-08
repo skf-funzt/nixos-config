@@ -161,6 +161,51 @@
   virtualisation.podman.enable = true;
   virtualisation.podman.dockerSocket.enable = true;
 
+
+  # ── Snapshots (Snapper + Btrfs) ───────────────────────────────
+  # Bind-mount @snapshots to /.snapshots so snapper can use it
+  fileSystems."/.snapshots" = {
+    device = "/snapshots";
+    options = [ "bind" ];
+  };
+
+  services.snapper = {
+    snapshotInterval = "hourly";
+    cleanupInterval = "1d";
+    persistentTimer = true;
+
+    configs = {
+      root = {
+        SUBVOLUME = "/";
+        ALLOW_USERS = [ "stephan" ];
+        TIMELINE_CREATE = true;
+        TIMELINE_CLEANUP = true;
+        TIMELINE_LIMIT_HOURLY = 6;
+        TIMELINE_LIMIT_DAILY = 7;
+        TIMELINE_LIMIT_WEEKLY = 4;
+        TIMELINE_LIMIT_MONTHLY = 0;
+        TIMELINE_LIMIT_YEARLY = 0;
+      };
+      home = {
+        SUBVOLUME = "/home";
+        ALLOW_USERS = [ "stephan" ];
+        TIMELINE_CREATE = true;
+        TIMELINE_CLEANUP = true;
+        TIMELINE_LIMIT_HOURLY = 0;
+        TIMELINE_LIMIT_DAILY = 7;
+        TIMELINE_LIMIT_WEEKLY = 4;
+        TIMELINE_LIMIT_MONTHLY = 3;
+        TIMELINE_LIMIT_YEARLY = 0;
+      };
+    };
+  };
+
+  # Ephemeral cache exclusions for stephan (ported from btrfs-laptop.nix)
+  systemd.tmpfiles.rules = [
+    "v /home/stephan/.cache        0700 stephan users -"
+    "v /home/stephan/.local/share  0700 stephan users -"
+  ];
+
   # ── Nix Settings ─────────────────────────────────────────────
   nix.settings.experimental-features = [
     "nix-command"
