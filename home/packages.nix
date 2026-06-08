@@ -105,6 +105,7 @@ in
     pi-wrapped
     pkgs.bashInteractive
     pkgs.byobu
+    pkgs.playerctl
 
     # ── Key / Management ──
     pkgs.infisical
