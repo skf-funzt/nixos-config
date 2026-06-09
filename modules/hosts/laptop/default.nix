@@ -168,7 +168,6 @@
   virtualisation.podman.enable = true;
   virtualisation.podman.dockerSocket.enable = true;
 
-
   # ── Snapshots (Snapper + Btrfs) ───────────────────────────────
   # Bind-mount @snapshots to /.snapshots so snapper can use it
   fileSystems."/.snapshots" = {
@@ -200,22 +199,61 @@
         ALLOW_USERS = [ "stephan" ];
         TIMELINE_CREATE = true;
         TIMELINE_CLEANUP = true;
-        TIMELINE_LIMIT_HOURLY = 12;
+        TIMELINE_LIMIT_HOURLY = 24;
         TIMELINE_LIMIT_DAILY = 7;
         TIMELINE_LIMIT_WEEKLY = 4;
-        TIMELINE_LIMIT_MONTHLY = 3;
+        TIMELINE_LIMIT_MONTHLY = 12;
         TIMELINE_LIMIT_YEARLY = 1;
       };
     };
   };
 
-  # Ephemeral cache exclusions for stephan (ported from btrfs-laptop.nix)
+  # Ephemeral subvolumes — excluded from home snapshots.
+  # The oneshot service below converts existing dirs; tmpfiles keeps them alive.
   systemd.tmpfiles.rules = [
     "v /home/stephan/.cache        0700 stephan users -"
     "v /home/stephan/.local/share  0700 stephan users -"
     # Snapper needs this directory to exist on the @home subvolume
     "d /home/.snapshots             0755 root root -"
   ];
+
+  # Convert existing directories to btrfs subvolumes on boot.
+  # Idempotent — only runs if the path is a plain directory (not already a subvolume).
+  # This ensures .cache and .local/share are excluded from home snapshots.
+  systemd.services.ensure-home-subvolumes = {
+    description = "Ensure ephemeral home dirs are btrfs subvolumes";
+    wantedBy = [ "multi-user.target" ];
+    before = [ "home-manager-stephan.service" ];
+    unitConfig.ConditionPathIsMountPoint = "/home";
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    };
+    script = ''
+      ensure_subvol() {
+        local path="$1"
+        local owner="$2"
+        if btrfs subvolume show "$path" &>/dev/null; then
+          echo "$path is already a subvolume, skipping"
+          return 0
+        fi
+        if [ ! -d "$path" ]; then
+          echo "$path does not exist, tmpfiles will create it"
+          return 0
+        fi
+        local tmp="''${path}.subvol-tmp"
+        echo "Converting $path to subvolume..."
+        mv "$path" "$tmp"
+        btrfs subvolume create "$path"
+        cp -a "$tmp"/. "$path"/
+        rm -rf "$tmp"
+        chown -R "$owner" "$path"
+        echo "Done: $path is now a subvolume"
+      }
+      ensure_subvol /home/stephan/.cache       stephan:users
+      ensure_subvol /home/stephan/.local/share stephan:users
+    '';
+  };
 
   # ── Nix Settings ─────────────────────────────────────────────
   nix.settings.experimental-features = [
