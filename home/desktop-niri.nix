@@ -17,4 +17,10 @@
       include dank-theme.conf
     '';
   };
+
+  # DMS GTK theming — matugen generates GTK CSS matching DMS theme
+  # Also enable via DMS Settings → Appearance → "GTK Theming" for runtime toggle
+  programs.dank-material-shell.settings = {
+    gtkThemingEnabled = true;
+  };
 }
