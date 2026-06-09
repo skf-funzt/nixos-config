@@ -24,13 +24,13 @@ in
             type = lib.types.nullOr lib.types.str;
             default = null;
             example = "stephan:users";
-            description = "Owner (user:group). Null = auto-detect.";
+            description = "Owner (user:group). Null = auto-detect from parent.";
           };
         };
       }
     );
     default = [ ];
-    description = "Paths to convert to btrfs subvolumes on boot.";
+    description = "Paths to ensure are btrfs subvolumes on boot. Creates or converts as needed.";
   };
 
   config = lib.mkIf (cfg != [ ]) {
@@ -60,30 +60,39 @@ in
             return
           fi
 
+          # Already a subvolume? Skip.
           if btrfs subvolume show "$path" &>/dev/null; then
             echo "SKIP: $path (already a subvolume)"
             return 0
           fi
 
-          if [ ! -d "$path" ]; then
-            echo "SKIP: $path (not a directory yet)"
-            return 0
-          fi
-
+          # Auto-detect owner
           if [ "$owner" = "auto" ]; then
-            owner=$(stat -c '%U:%G' "$path")
+            if [ -d "$path" ]; then
+              owner=$(stat -c '%U:%G' "$path")
+            else
+              owner=$(stat -c '%U:%G' "$(dirname "$path")")
+            fi
             echo "AUTO: $path owner=$owner"
           fi
 
-          local tmp="''${path}.subvol-tmp.$$"
-          echo "CONVERT: $path → btrfs subvolume"
+          if [ -d "$path" ]; then
+            # Existing directory — convert to subvolume
+            local tmp="''${path}.subvol-tmp.$$"
+            echo "CONVERT: $path (directory → subvolume)"
+            mv "$path" "$tmp" || { echo "ERROR: cannot move $path"; return 1; }
+            btrfs subvolume create "$path" || {
+              echo "ERROR: subvolume create failed, restoring..."; mv "$tmp" "$path"; return 1;
+            }
+            cp -a "$tmp"/. "$path"/
+            rm -rf "$tmp"
+          else
+            # Doesn't exist — create as subvolume directly
+            echo "CREATE: $path (new subvolume)"
+            mkdir -p "$(dirname "$path")"
+            btrfs subvolume create "$path" || { echo "ERROR: create failed"; return 1; }
+          fi
 
-          mv "$path" "$tmp" || { echo "ERROR: cannot move $path"; return 1; }
-          btrfs subvolume create "$path" || {
-            echo "ERROR: subvolume create failed, restoring..."; mv "$tmp" "$path"; return 1;
-          }
-          cp -a "$tmp"/. "$path"/
-          rm -rf "$tmp"
           [ -n "$owner" ] && chown -R "$owner" "$path"
           echo "DONE: $path"
         }
