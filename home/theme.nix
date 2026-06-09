@@ -32,6 +32,7 @@
 
   # ── Stylix ───────────────────────────────────────────────────
   stylix.enable = true;
+  stylix.targets.gnome.enable = false;  # We use niri, not GNOME Shell
   stylix.base16Scheme = "${pkgs.base16-schemes}/share/themes/eighties.yaml";
   stylix.image = pkgs.fetchurl {
     url = "https://zebreus.github.io/all-gnome-backgrounds/images/keys-d-65e33e56cb91fc3b79d997399d2b660fbad42c84.webp";
