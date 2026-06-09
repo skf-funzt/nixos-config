@@ -3,14 +3,6 @@
 { config, pkgs, lib, ... }:
 
 {
-  # ── Cursor ───────────────────────────────────────────────────
-  home.pointerCursor = {
-    gtk.enable = true;
-    name = "Bibata-Modern-Classic";
-    package = pkgs.bibata-cursors;
-    size = 22;
-  };
-
   # ── GTK (handled by Stylix below) ────────────────────────────
   gtk.enable = true;
 
