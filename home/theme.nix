@@ -11,24 +11,8 @@
     size = 22;
   };
 
-  # ── GTK ──────────────────────────────────────────────────────
-  gtk = {
-    enable = true;
-    cursorTheme = {
-      name = "Bibata-Modern-Classic";
-      package = pkgs.bibata-cursors;
-      size = 22;
-    };
-    font = {
-      package = pkgs.noto-fonts;
-      name = "Noto Sans";
-      size = lib.mkForce 10;
-    };
-    iconTheme = {
-      package = pkgs.papirus-icon-theme;
-      name = "Papirus-Dark";
-    };
-  };
+  # ── GTK (handled by Stylix below) ────────────────────────────
+  gtk.enable = true;
 
   # ── Stylix ───────────────────────────────────────────────────
   stylix.enable = true;
