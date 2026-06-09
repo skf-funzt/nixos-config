@@ -39,7 +39,7 @@
   networking.wireless = {
     enable = true;
     userControlled = true;
-  ];
+  };
   # ── Locale / Time ────────────────────────────────────────────
   time.timeZone = "Europe/Berlin";
   i18n.defaultLocale = "en_US.UTF-8";
@@ -53,7 +53,7 @@
     LC_PAPER = "de_DE.UTF-8";
     LC_TELEPHONE = "de_DE.UTF-8";
     LC_TIME = "de_DE.UTF-8";
-  ];
+  };
 
   # ── Console / Keymap / X11 ───────────────────────────────────
   services.xserver = {
@@ -63,7 +63,7 @@
       layout = "us"; # Change to your layout
       options = "compose:ralt"; # Sets Right Alt as the Compose Key
     };
-  ];
+  };
 
   # ── Audio ────────────────────────────────────────────────────
   services.pulseaudio.enable = false;
@@ -73,7 +73,7 @@
     alsa.enable = true;
     alsa.support32Bit = true;
     pulse.enable = true;
-  ];
+  };
 
   # ── Printing ─────────────────────────────────────────────────
   services.printing.enable = true;
@@ -91,7 +91,7 @@
   # ── Root ─────────────────────────────────────────────────────
   users.users.root = {
     initialPassword = "root";
-  ];
+  };
 
   # ── Packages ─────────────────────────────────────────────────
   nixpkgs.config = {
@@ -99,7 +99,7 @@
     #   permittedInsecurePackages = [
     #     "electron-39.8.10"
     #   ];
-  ];
+  };
 
   environment.systemPackages = with pkgs; [
     vim
@@ -163,7 +163,7 @@
       enable = true;
       restartIfChanged = true;
     };
-  ];
+  };
 
   # ── Virtualisation ───────────────────────────────────────────
   virtualisation.podman.enable = true;
@@ -175,7 +175,7 @@
     device = "/snapshots";
     options = [ "bind" ];
     fsType = "none";
-  ];
+  };
 
   services.snapper = {
     snapshotInterval = "hourly";
@@ -215,20 +215,13 @@
     { path = "/home/stephan/.cache";       owner = "stephan:users"; }
     { path = "/home/stephan/.local/share"; owner = "stephan:users"; }
   ];
-  # Snapper needs this directory to exist on the @home subvolume.
 
   # v rules keep converted dirs as subvolumes across rebuilds.
-
+  # Snapper needs this dir to exist on the @home subvolume.
   systemd.tmpfiles.rules = [
-
-    "v /home/stephan/.cache        0755 stephan users -"
-
-    "v /home/stephan/.local/share  0755 stephan users -"
-
+    "v /home/stephan/.cache        0700 stephan users -"
+    "v /home/stephan/.local/share  0700 stephan users -"
     "d /home/.snapshots             0755 root root -"
-
-  ];
-    "d /home/.snapshots 0755 root root -"
   ];
 
   # ── Nix Settings ─────────────────────────────────────────────
@@ -249,7 +242,7 @@
     gpuType = "amd";
     dms = inputs.dms;
     nixvim = inputs.khanelivim;
-  ];
+  };
 
   # ── Home Manager Shared Modules ──────────────────────────────
   home-manager.sharedModules = [
