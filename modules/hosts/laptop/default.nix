@@ -212,6 +212,8 @@
   systemd.tmpfiles.rules = [
     "v /home/stephan/.cache        0700 stephan users -"
     "v /home/stephan/.local/share  0700 stephan users -"
+    # Snapper needs this directory to exist on the @home subvolume
+    "d /home/.snapshots             0755 root root -"
   ];
 
   # ── Nix Settings ─────────────────────────────────────────────
