@@ -16,6 +16,7 @@
     inputs.disko.nixosModules.disko
     inputs.dms.nixosModules.dank-material-shell
     ../../system/disko-laptop.nix # Declarative disk partitioning (replaces btrfs-laptop.nix)
+    ../../system/ensure-btrfs-subvolumes.nix  # Subvolume helper
     ../../desktop/gnome.nix
     ../../desktop/niri.nix
     ../../users/stephan.nix
@@ -38,7 +39,7 @@
   networking.wireless = {
     enable = true;
     userControlled = true;
-  };
+  ];
   # ── Locale / Time ────────────────────────────────────────────
   time.timeZone = "Europe/Berlin";
   i18n.defaultLocale = "en_US.UTF-8";
@@ -52,7 +53,7 @@
     LC_PAPER = "de_DE.UTF-8";
     LC_TELEPHONE = "de_DE.UTF-8";
     LC_TIME = "de_DE.UTF-8";
-  };
+  ];
 
   # ── Console / Keymap / X11 ───────────────────────────────────
   services.xserver = {
@@ -62,7 +63,7 @@
       layout = "us"; # Change to your layout
       options = "compose:ralt"; # Sets Right Alt as the Compose Key
     };
-  };
+  ];
 
   # ── Audio ────────────────────────────────────────────────────
   services.pulseaudio.enable = false;
@@ -72,7 +73,7 @@
     alsa.enable = true;
     alsa.support32Bit = true;
     pulse.enable = true;
-  };
+  ];
 
   # ── Printing ─────────────────────────────────────────────────
   services.printing.enable = true;
@@ -90,7 +91,7 @@
   # ── Root ─────────────────────────────────────────────────────
   users.users.root = {
     initialPassword = "root";
-  };
+  ];
 
   # ── Packages ─────────────────────────────────────────────────
   nixpkgs.config = {
@@ -98,7 +99,7 @@
     #   permittedInsecurePackages = [
     #     "electron-39.8.10"
     #   ];
-  };
+  ];
 
   environment.systemPackages = with pkgs; [
     vim
@@ -162,7 +163,7 @@
       enable = true;
       restartIfChanged = true;
     };
-  };
+  ];
 
   # ── Virtualisation ───────────────────────────────────────────
   virtualisation.podman.enable = true;
@@ -174,7 +175,7 @@
     device = "/snapshots";
     options = [ "bind" ];
     fsType = "none";
-  };
+  ];
 
   services.snapper = {
     snapshotInterval = "hourly";
@@ -208,52 +209,27 @@
     };
   };
 
-  # Ephemeral subvolumes — excluded from home snapshots.
-  # The oneshot service below converts existing dirs; tmpfiles keeps them alive.
-  systemd.tmpfiles.rules = [
-    "v /home/stephan/.cache        0700 stephan users -"
-    "v /home/stephan/.local/share  0700 stephan users -"
-    # Snapper needs this directory to exist on the @home subvolume
-    "d /home/.snapshots             0755 root root -"
+  # ── Ephemeral subvolumes (excluded from home snapshots) ──────
+  # Managed by modules/system/ensure-btrfs-subvolumes.nix.
+  boot.btrfs.ensureSubvolumes = [
+    { path = "/home/stephan/.cache";       owner = "stephan:users"; }
+    { path = "/home/stephan/.local/share"; owner = "stephan:users"; }
   ];
+  # Snapper needs this directory to exist on the @home subvolume.
 
-  # Convert existing directories to btrfs subvolumes on boot.
-  # Idempotent — only runs if the path is a plain directory (not already a subvolume).
-  # This ensures .cache and .local/share are excluded from home snapshots.
-  systemd.services.ensure-home-subvolumes = {
-    description = "Ensure ephemeral home dirs are btrfs subvolumes";
-    wantedBy = [ "multi-user.target" ];
-    before = [ "home-manager-stephan.service" ];
-    unitConfig.ConditionPathIsMountPoint = "/home";
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = true;
-    };
-    script = ''
-      ensure_subvol() {
-        local path="$1"
-        local owner="$2"
-        if btrfs subvolume show "$path" &>/dev/null; then
-          echo "$path is already a subvolume, skipping"
-          return 0
-        fi
-        if [ ! -d "$path" ]; then
-          echo "$path does not exist, tmpfiles will create it"
-          return 0
-        fi
-        local tmp="''${path}.subvol-tmp"
-        echo "Converting $path to subvolume..."
-        mv "$path" "$tmp"
-        btrfs subvolume create "$path"
-        cp -a "$tmp"/. "$path"/
-        rm -rf "$tmp"
-        chown -R "$owner" "$path"
-        echo "Done: $path is now a subvolume"
-      }
-      ensure_subvol /home/stephan/.cache       stephan:users
-      ensure_subvol /home/stephan/.local/share stephan:users
-    '';
-  };
+  # v rules keep converted dirs as subvolumes across rebuilds.
+
+  systemd.tmpfiles.rules = [
+
+    "v /home/stephan/.cache        0755 stephan users -"
+
+    "v /home/stephan/.local/share  0755 stephan users -"
+
+    "d /home/.snapshots             0755 root root -"
+
+  ];
+    "d /home/.snapshots 0755 root root -"
+  ];
 
   # ── Nix Settings ─────────────────────────────────────────────
   nix.settings.experimental-features = [
@@ -273,7 +249,7 @@
     gpuType = "amd";
     dms = inputs.dms;
     nixvim = inputs.khanelivim;
-  };
+  ];
 
   # ── Home Manager Shared Modules ──────────────────────────────
   home-manager.sharedModules = [
