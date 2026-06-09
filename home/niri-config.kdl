@@ -1,5 +1,6 @@
 // Niri config — managed declaratively via home-manager
 // DMS desktop shell auto-starts via systemd user service
+// DMS overrides (included at end) take precedence over base settings below.
 input {
     keyboard {
         xkb {
@@ -15,12 +16,9 @@ input {
         natural-scroll
     }
 }
-// DMS generates themed niri includes at runtime
-include "dms/colors.kdl"
 
 layout {
     gaps 16
-    // focus-ring colors provided by dms/colors.kdl above
     focus-ring {
         width 4
     }
@@ -272,4 +270,10 @@ binds {
         show-hotkey-overlay
     }
 }
+
+// ── DMS runtime overrides (included last → take precedence) ──
+include "dms/colors.kdl"
+include "dms/layout.kdl"
+include "dms/alttab.kdl"
+include "dms/wpblur.kdl"
 
