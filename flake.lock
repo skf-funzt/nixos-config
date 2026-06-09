@@ -458,11 +458,11 @@
         "rustowl-flake": "rustowl-flake"
       },
       "locked": {
-        "lastModified": 1780879012,
-        "narHash": "sha256-6qYelMtftZs2TeiIrSsUNKq2znt4z8WQ1EKAC8aGE20=",
+        "lastModified": 1780938606,
+        "narHash": "sha256-dGU2dzhFLpjHaBFQVhxFmTb1ZQE3mfoqN5DFDj7Dsgs=",
         "owner": "khaneliman",
         "repo": "khanelivim",
-        "rev": "0b0f085771878e7412045b3687dc7e6c9535bd8d",
+        "rev": "e57d54b9f91c6bd043d97f10ca80ddaec7bb637d",
         "type": "github"
       },
       "original": {
@@ -672,11 +672,11 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1780734595,
-        "narHash": "sha256-DmTfP92QFYRLOGXlMIE54MAgxSJjDWocl3gRNOu72Os=",
+        "lastModified": 1780902259,
+        "narHash": "sha256-q8yYEC5f1mFlQO9RGna4LTc9QrcvWunX6FYp83munkQ=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "9b696460ac78b5ccfc17c854d8c976f20456e943",
+        "rev": "bd0ff2d3eac24699c3664d5966b9ef36f388e2ca",
         "type": "github"
       },
       "original": {

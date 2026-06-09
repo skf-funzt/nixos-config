@@ -4,7 +4,7 @@
 { config, pkgs, lib, ... }:
 
 {
-  # ── Cursor ───────────────────────────────────────────────────
+  # ── Cursor (let DMS manage via its Settings UI) ──────────────
   home.pointerCursor = {
     gtk.enable = true;
     name = "Bibata-Modern-Classic";

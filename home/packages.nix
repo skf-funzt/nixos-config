@@ -46,6 +46,10 @@ in
     # ── Icons ──
     pkgs.papirus-icon-theme
 
+    # ── Qt theming (for DMS "Apply Qt Colors") ──
+    pkgs.libsForQt5.qt5ct
+    pkgs.qt6Packages.qt6ct
+
     # ── Terminal emulators ──
     pkgs.alacritty
     pkgs.kitty
@@ -72,16 +76,16 @@ in
 
     # ── Media / Creative ──
     pkgs.spotify
-    (config.lib.nixGL.wrap pkgs.vlc)
-    (config.lib.nixGL.wrap pkgs.darktable)
-    (config.lib.nixGL.wrap pkgs.drawing)
-    (config.lib.nixGL.wrap pkgs.gimp3)
-    (config.lib.nixGL.wrap pkgs.krita)
-    (config.lib.nixGL.wrap pkgs.inkscape)
-    (config.lib.nixGL.wrap pkgs.blender)
-    (config.lib.nixGL.wrap pkgs.obs-studio)
+    pkgs.vlc
+    pkgs.darktable
+    pkgs.drawing
+    pkgs.gimp3
+    pkgs.krita
+    pkgs.inkscape
+    pkgs.blender
+    pkgs.obs-studio
+    pkgs.kdePackages.kdenlive
     pkgs.peek
-    (config.lib.nixGL.wrap pkgs.kdePackages.kdenlive)
 
     # ── Messengers ──
     pkgs.signal-desktop

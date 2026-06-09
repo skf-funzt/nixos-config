@@ -20,6 +20,7 @@
   home.sessionVariables = {
     CARGO_TARGET_DIR = "${config.xdg.cacheHome}/cargo-targets";
     GOCACHE = "${config.xdg.cacheHome}/go-build";
+    QT_QPA_PLATFORMTHEME = "qt6ct";  # DMS Qt theming
   };
 
   # ── Nixpkgs Config ───────────────────────────────────────────
