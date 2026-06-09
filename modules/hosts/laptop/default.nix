@@ -144,6 +144,13 @@
   programs.direnv.enable = true;
   programs.tmux.enable = true;
   powerManagement.powertop.enable = true;
+
+  # Prevent USB autosuspend for wireless mouse receiver (fixes ~1s lag)
+  services.udev.extraRules = ''
+    # Logitech USB Receiver — disable autosuspend to prevent mouse stutter
+    SUBSYSTEM=="usb", ATTR{idVendor}=="046d", ATTR{idProduct}=="c53f", ATTR{power/control}="on"
+  '';
+
   programs.git.enable = true;
   programs.git.lfs.enable = true;
   programs.git.prompt.enable = true;
