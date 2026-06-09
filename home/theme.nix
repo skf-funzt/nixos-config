@@ -22,7 +22,7 @@
     font = {
       package = pkgs.noto-fonts;
       name = "Noto Sans";
-      size = 10;
+      size = lib.mkForce 10;
     };
     iconTheme = {
       package = pkgs.papirus-icon-theme;
