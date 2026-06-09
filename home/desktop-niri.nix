@@ -18,9 +18,7 @@
     '';
   };
 
-  # DMS GTK theming — matugen generates GTK CSS matching DMS theme
-  # Also enable via DMS Settings → Appearance → "GTK Theming" for runtime toggle
-  programs.dank-material-shell.settings = {
-    gtkThemingEnabled = true;
-  };
+  # DMS GTK theming: enable via DMS Settings → Appearance → "GTK Theming"
+  # This makes matugen generate GTK CSS from the current DMS theme,
+  # giving GTK apps the same look as the DMS shell and niri borders.
 }
