@@ -15,12 +15,14 @@ input {
         natural-scroll
     }
 }
+// DMS generates themed niri includes at runtime
+include "dms/colors.kdl"
+
 layout {
     gaps 16
+    // focus-ring colors provided by dms/colors.kdl above
     focus-ring {
         width 4
-        active-color "#7fc8ff"
-        inactive-color "#505050"
     }
     default-column-width {
         proportion 0.5
