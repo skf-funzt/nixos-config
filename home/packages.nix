@@ -69,6 +69,7 @@ in
 
     # ── Security ──
     pkgs.yubioath-flutter
+    pkgs.swaylock
 
     # ── Browsers ──
     (config.lib.nixGL.wrap pkgs.firefox)
@@ -110,6 +111,8 @@ in
     pkgs.bashInteractive
     pkgs.byobu
     pkgs.playerctl
+    pkgs.lazygit
+    pkgs.lazydocker
 
     # ── Key / Management ──
     pkgs.infisical

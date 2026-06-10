@@ -113,17 +113,17 @@ binds {
     Mod+Shift+Down hotkey-overlay-title="Decrease Height" {
         set-window-height "-5%"
     }
-    Mod+Shift+L hotkey-overlay-title="Widen Column" {
-        set-column-width "+5%"
-    }
     Mod+Shift+H hotkey-overlay-title="Narrow Column" {
         set-column-width "-5%"
+    }
+    Mod+Shift+J hotkey-overlay-title="Decrease Height" {
+        set-window-height "-5%"
     }
     Mod+Shift+K hotkey-overlay-title="Increase Height" {
         set-window-height "+5%"
     }
-    Mod+Shift+J hotkey-overlay-title="Decrease Height" {
-        set-window-height "-5%"
+    Mod+Shift+L hotkey-overlay-title="Widen Column" {
+        set-column-width "+5%"
     }
     // Consume or expel window left/right
     Mod+Ctrl+Shift+Left hotkey-overlay-title="Expel Window Left" {
@@ -136,6 +136,12 @@ binds {
         consume-or-expel-window-left
     }
     Mod+Ctrl+Shift+L hotkey-overlay-title="Expel Window Right" {
+        consume-or-expel-window-right
+    }
+    Mod+BracketLeft hotkey-overlay-title="Expel Window Left" {
+        consume-or-expel-window-left
+    }
+    Mod+BracketRight hotkey-overlay-title="Expel Window Right" {
         consume-or-expel-window-right
     }
     // Workspaces
@@ -219,6 +225,19 @@ binds {
     }
     Mod+Shift+V hotkey-overlay-title="Switch Floating / Tiling Focus" {
         switch-focus-between-floating-and-tiling
+    }
+    // Power
+    Mod+Alt+Shift+H hotkey-overlay-title="Hibernate" {
+        spawn "systemctl" "hibernate"
+    }
+    Mod+Alt+Shift+S hotkey-overlay-title="Suspend" {
+        spawn "systemctl" "suspend"
+    }
+    Mod+Alt+Shift+P hotkey-overlay-title="Power Off" {
+        spawn "systemctl" "poweroff"
+    }
+    Mod+Alt+Shift+L hotkey-overlay-title="Lock Screen" {
+        spawn "swaylock"
     }
     // Quit
     Mod+Shift+E hotkey-overlay-title="Quit Niri" {
