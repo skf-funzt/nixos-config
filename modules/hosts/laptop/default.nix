@@ -38,6 +38,16 @@
     allowDiscards = true;
   };
 
+  # Warn at build time if the keyfile hasn't been created yet
+  # (expected on fresh disko install — run convert-swap-to-luks.sh)
+  warnings = lib.optionals (!builtins.pathExists "/etc/cryptswap.key") [
+    ''
+      cryptswap keyfile /etc/cryptswap.key not found.
+      Hibernation will prompt for an extra swap password at boot.
+      Run: sudo /etc/nixos/install/scripts/convert-swap-to-luks.sh
+    ''
+  ];
+
   # ── Kernel ───────────────────────────────────────────────────
   boot.kernelPackages = pkgs.linuxPackages_latest;
 
