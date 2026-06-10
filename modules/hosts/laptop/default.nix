@@ -16,7 +16,7 @@
     inputs.disko.nixosModules.disko
     inputs.dms.nixosModules.dank-material-shell
     ../../system/disko-laptop.nix # Declarative disk partitioning (replaces btrfs-laptop.nix)
-    ../../system/ensure-btrfs-subvolumes.nix  # Subvolume helper
+    ../../system/ensure-btrfs-subvolumes.nix # Subvolume helper
     ../../desktop/gnome.nix
     ../../desktop/niri.nix
     ../../users/stephan.nix
@@ -26,9 +26,14 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  # Hibernation resume from LUKS (update <OFFSET> after install)
-  # boot.resumeDevice = "/dev/mapper/cryptroot";
-  # boot.kernelParams = [ "resume_offset=<OFFSET>" ];
+  # Hibernation — swap on LUKS-encrypted partition, unlocked via same passphrase as root.
+  # resumeDevice is set to /dev/mapper/cryptswap by disko's resumeDevice = true.
+  # Reuses cryptroot passphrase so only one unlock prompt at boot.
+  boot.initrd.luks.reusePassphrases = true;
+  boot.initrd.luks.devices.cryptswap = {
+    device = "/dev/disk/by-partlabel/disk-main-swap";
+    allowDiscards = true;
+  };
 
   # ── Kernel ───────────────────────────────────────────────────
   boot.kernelPackages = pkgs.linuxPackages_latest;
@@ -40,6 +45,21 @@
     enable = true;
     userControlled = true;
   };
+  # ── Power / Hibernation ────────────────────────────────────
+  # Power button suspends (safer than hibernate for laptop),
+  # lid close suspends, lid on external power does nothing.
+  services.logind.settings.Login = {
+    HandlePowerKey = "suspend";
+    HandleLidSwitch = "suspend";
+    HandleLidSwitchExternalPower = "ignore";
+  };
+
+  # Suspend-then-hibernate: after 1 hour suspended, hibernate to save battery.
+  systemd.sleep.settings.Sleep = {
+    AllowHibernation = "yes";
+    HibernateDelaySec = "3600";
+  };
+
   # ── Locale / Time ────────────────────────────────────────────
   time.timeZone = "Europe/Berlin";
   i18n.defaultLocale = "en_US.UTF-8";
@@ -212,9 +232,18 @@
   # ── Ephemeral subvolumes (excluded from home snapshots) ──────
   # Managed by modules/system/ensure-btrfs-subvolumes.nix.
   boot.btrfs.ensureSubvolumes = [
-    { path = "/home/stephan/.cache";       owner = "stephan:users"; }
-    { path = "/home/stephan/.local/share"; owner = "stephan:users"; }
-    { path = "/home/.snapshots"; owner = "root:root"; }
+    {
+      path = "/home/stephan/.cache";
+      owner = "stephan:users";
+    }
+    {
+      path = "/home/stephan/.local/share";
+      owner = "stephan:users";
+    }
+    {
+      path = "/home/.snapshots";
+      owner = "root:root";
+    }
   ];
 
   # v rules keep converted dirs as subvolumes across rebuilds.

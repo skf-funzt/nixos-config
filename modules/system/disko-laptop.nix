@@ -13,8 +13,8 @@
 # DEVICE: /dev/nvme0n1 (3.7T NVMe)
 # LAYOUT:
 #   p1  EFI      1G   vfat   /boot
-#   p2  LUKS     rest-96G  Btrfs subvolumes: @ @home @nix @log @snapshots
-#   p3  swap     96G  swap   hibernation resume
+#   p2  swap     96G  swap   hibernation resume
+#   p3  LUKS     rest  Btrfs subvolumes: @ @home @nix @log @snapshots
 
 {
   disko.devices = {
@@ -37,6 +37,24 @@
               };
             };
 
+            # ── Swap partition (LUKS-encrypted for hibernation security) ──
+            swap = {
+              size = "96G";
+              type = "8200";
+              content = {
+                type = "luks";
+                name = "cryptswap";
+                passwordFile = "/tmp/luks-password";
+                settings = {
+                  allowDiscards = true;
+                };
+                content = {
+                  type = "swap";
+                  resumeDevice = true;
+                };
+              };
+            };
+
             # ── LUKS root partition ──
             luks = {
               size = "100%";
@@ -49,40 +67,49 @@
                 };
                 content = {
                   type = "btrfs";
-                  extraArgs = [ "-L" "nixos" "-f" ];
+                  extraArgs = [
+                    "-L"
+                    "nixos"
+                    "-f"
+                  ];
                   subvolumes = {
                     "@" = {
                       mountpoint = "/";
-                      mountOptions = [ "compress=zstd:1" "noatime" ];
+                      mountOptions = [
+                        "compress=zstd:1"
+                        "noatime"
+                      ];
                     };
                     "@home" = {
                       mountpoint = "/home";
-                      mountOptions = [ "compress=zstd:1" "noatime" ];
+                      mountOptions = [
+                        "compress=zstd:1"
+                        "noatime"
+                      ];
                     };
                     "@nix" = {
                       mountpoint = "/nix";
-                      mountOptions = [ "compress=zstd:1" "noatime" ];
+                      mountOptions = [
+                        "compress=zstd:1"
+                        "noatime"
+                      ];
                     };
                     "@log" = {
                       mountpoint = "/var/log";
-                      mountOptions = [ "compress=zstd:1" "noatime" ];
+                      mountOptions = [
+                        "compress=zstd:1"
+                        "noatime"
+                      ];
                     };
                     "@snapshots" = {
                       mountpoint = "/snapshots";
-                      mountOptions = [ "compress=zstd:1" "noatime" ];
+                      mountOptions = [
+                        "compress=zstd:1"
+                        "noatime"
+                      ];
                     };
                   };
                 };
-              };
-            };
-
-            # ── Swap partition ──
-            swap = {
-              size = "96G";
-              type = "8200";
-              content = {
-                type = "swap";
-                resumeDevice = true;
               };
             };
           };
