@@ -182,10 +182,20 @@
   programs.tmux.enable = true;
   powerManagement.powertop.enable = true;
 
-  # Prevent USB autosuspend for wireless mouse receiver (fixes ~1s lag)
+  # ── USB Mouse Autosuspend Exception ──────────────────────────
+  # Only the Logitech wireless mouse receiver (046d:c53f) has autosuspend disabled.
+  # All other USB devices (keyboard, camera, Bluetooth, dock, etc.) still
+  # autosuspend after 2s idle via powertop + kernel defaults.
+  #
+  # The udev rule handles initial plug, hotplug, and resume re-enumeration.
+  # The fix-mouse-autosuspend.service below re-applies after powertop --auto-tune
+  # overrides it at boot.
   services.udev.extraRules = ''
-    # Logitech USB Receiver — disable autosuspend to prevent mouse stutter
-    SUBSYSTEM=="usb", ATTR{idVendor}=="046d", ATTR{idProduct}=="c53f", ATTR{power/control}="on"
+    # Logitech USB Receiver (046d:c53f) — disable autosuspend to prevent mouse stutter
+    # This is the ONLY USB device excluded from power saving. All other devices
+    # still autosuspend normally. See fix-mouse-autosuspend.service for the
+    # powertop override fix.
+    ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="046d", ATTR{idProduct}=="c53f", ATTR{power/control}="on", ATTR{power/autosuspend}="-1"
   '';
 
   programs.git.enable = true;
@@ -296,6 +306,42 @@
   nix.gc.automatic = true;
   nix.gc.options = "--delete-older-than 30d";
   nix.optimise.automatic = true;
+
+  # ── USB Mouse Autosuspend Fix (post-powertop) ────────────────
+  # powertop --auto-tune enables autosuspend on ALL USB devices, which overrides
+  # the udev rule above at every boot. This oneshot service runs after powertop
+  # and re-disables autosuspend for ONLY the Logitech receiver (046d:c53f).
+  #
+  # SCOPE: single device, targeted by vendor+product ID (not USB path), so it
+  # survives topology changes. All other USB devices keep their powertop-managed
+  # autosuspend (2s idle timeout) for power savings.
+  #
+  # To adapt for a different mouse: update idVendor + idProduct in BOTH the
+  # udev rule above AND the script below.
+  systemd.services.fix-mouse-autosuspend = let
+    fixMouseScript = pkgs.writeShellScript "fix-mouse-autosuspend" ''
+      set -eu
+      for dev in /sys/bus/usb/devices/*/idVendor; do
+        [ -f "$dev" ] || continue
+        vendor="$(cat "$dev" 2>/dev/null)"
+        product="$(cat "''${dev%/idVendor}/idProduct" 2>/dev/null)"
+        if [ "$vendor" = "046d" ] && [ "$product" = "c53f" ]; then
+          echo "on" > "''${dev%/idVendor}/power/control" 2>/dev/null || true
+          echo "-1" > "''${dev%/idVendor}/power/autosuspend" 2>/dev/null || true
+        fi
+      done
+    '';
+  in {
+    description = "Force-disable USB autosuspend for Logitech mouse receiver";
+    after = [ "powertop.service" ];
+    wants = [ "powertop.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = "${fixMouseScript}";
+    };
+    wantedBy = [ "multi-user.target" ];
+  };
 
   # ── Home Manager Special Args ────────────────────────────────
   home-manager.extraSpecialArgs = {
