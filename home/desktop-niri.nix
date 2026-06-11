@@ -15,11 +15,13 @@
     extraConfig = ''
       include dank-tabs.conf
       include dank-theme.conf
-      # Disable kitty defaults that collide with byobu F-key bindings
-      map ctrl+shift+f2 no_op     # byobu: new window
-      map ctrl+shift+f3 no_op     # byobu: swap window left
-      map ctrl+shift+f5 no_op     # byobu: select profile
-      map ctrl+shift+f8 no_op     # byobu: save layout
+      # Unmap kitty defaults that collide with byobu F-key bindings.
+      # These must be mapped to nothing (pass-through), not no_op,
+      # so the keypress reaches the program running inside kitty.
+      map ctrl+shift+f2           # byobu: new session
+      map ctrl+shift+f3           # byobu: swap window left
+      map ctrl+shift+f5           # byobu: select profile
+      map ctrl+shift+f8           # byobu: save layout
     '';
   };
 
