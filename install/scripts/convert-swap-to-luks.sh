@@ -2,9 +2,9 @@
 # convert-swap-to-luks.sh — Set up LUKS-encrypted swap with keyfile on root.
 #
 # WHAT: Ensures /dev/nvme0n1p2 is a LUKS container (cryptswap) unlocked via
-#       a keyfile stored on the encrypted root. The initrd unlocks cryptroot
-#       first (password), then reads the keyfile from /sysroot/etc/cryptswap.key
-#       to unlock cryptswap — single password prompt at boot.
+#       a keyfile stored on the encrypted root. The keyfile is embedded in the
+#       initrd at build time (boot.initrd.secrets), so cryptswap can unlock
+#       before root is mounted — breaking the circular resume dependency.
 #
 # IDEMPOTENT: Safe to run multiple times. Skips already-completed steps.
 #             Will NOT re-luksFormat an existing LUKS container.
