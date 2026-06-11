@@ -22,8 +22,9 @@
 #   p2  swap     96G  LUKS  hibernation resume → /dev/mapper/cryptswap
 #   p3  LUKS     rest  Btrfs subvolumes: @ @home @nix @log @snapshots → /dev/mapper/cryptroot
 #
-# HIBERNATION: Swap is LUKS-encrypted. initrd unlocks cryptroot (password), then
-# reads /sysroot/etc/cryptswap.key from root to unlock cryptswap — single prompt.
+# HIBERNATION: Swap is LUKS-encrypted. The keyfile is embedded in the initrd
+# at build time (boot.initrd.secrets) so it's available before root is mounted.
+# This avoids a circular dependency during resume from hibernation.
 # On fresh install (keyfile missing) → fallback password prompt for swap.
 
 {

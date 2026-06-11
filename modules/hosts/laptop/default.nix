@@ -29,24 +29,27 @@
   # Hibernation — swap on LUKS-encrypted partition (cryptswap).
   # resumeDevice is set to /dev/mapper/cryptswap by disko's resumeDevice = true.
   #
-  # At boot, initrd unlocks cryptswap via keyfile from root (/sysroot/etc/cryptswap.key).
-  # If keyfile is missing (fresh install), systemd-cryptsetup falls back to password prompt
-  # (same passphrase as cryptroot). Run convert-swap-to-luks.sh to add the keyfile.
-  boot.initrd.luks.devices.cryptswap = {
-    device = "/dev/disk/by-partlabel/disk-main-swap";
-    keyFile = "/sysroot/etc/cryptswap.key";
-    allowDiscards = true;
+  # The keyfile is stored on root at /etc/cryptswap.key AND baked into the initrd
+  # at build time via boot.initrd.secrets. This avoids a circular dependency during
+  # resume from hibernation: the keyfile is available in the initrd's tmpfs before
+  # any filesystem is mounted, so cryptswap can unlock before root.
+  #
+  # If the keyfile doesn't exist at build time (fresh disko install), the build
+  # will fail with a clear error. Run convert-swap-to-luks.sh to set up the keyfile,
+  # then rebuild.
+  #
+  # NOTE: nixos-rebuild/nh must be run with --impure for the keyfile to be read
+  # from /etc/cryptswap.key (flakes block access to absolute paths by default).
+  # This is the standard approach for initrd secrets.
+  boot.initrd.secrets = {
+    "/etc/cryptswap.key" = "/etc/cryptswap.key";
   };
 
-  # Warn at build time if the keyfile hasn't been created yet
-  # (expected on fresh disko install — run convert-swap-to-luks.sh)
-  warnings = lib.optionals (!builtins.pathExists "/etc/cryptswap.key") [
-    ''
-      cryptswap keyfile /etc/cryptswap.key not found.
-      Hibernation will prompt for an extra swap password at boot.
-      Run: sudo /etc/nixos/install/scripts/convert-swap-to-luks.sh
-    ''
-  ];
+  boot.initrd.luks.devices.cryptswap = {
+    device = "/dev/disk/by-partlabel/disk-main-swap";
+    keyFile = "/etc/cryptswap.key";
+    allowDiscards = true;
+  };
 
   # ── Kernel ───────────────────────────────────────────────────
   boot.kernelPackages = pkgs.linuxPackages_latest;
@@ -202,7 +205,23 @@
   virtualisation.podman = {
     enable = true;
     dockerCompat = true; # docker CLI → podman
-    dockerSocket.enable = true; # Docker-compatible socket
+    # dockerSocket disabled — creates ROOT-scoped socket.
+    # Docker API clients use /var/run/docker.sock → user rootless socket.
+    dockerSocket.enable = false;
+  };
+  # ── Docker Socket Compat (→ rootless podman) ────────────────────
+  # Symlink /var/run/docker.sock → user's rootless podman socket.
+  # Docker API clients (supabase, lazydocker, etc.) hit this path.
+  systemd.services.podman-docker-socket = {
+    description = "Docker Socket Compat (→ rootless podman)";
+    after = [ "user@1000.service" ];
+    wants = [ "user@1000.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStart = "${pkgs.coreutils}/bin/ln -sf /run/user/1000/podman/podman.sock /var/run/docker.sock";
+    };
+    wantedBy = [ "multi-user.target" ];
   };
 
   # ── Snapshots (Snapper + Btrfs) ───────────────────────────────
