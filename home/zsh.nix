@@ -137,6 +137,9 @@
 
       # OpenCode editor
       export EDITOR=nvim
+
+      # Docker → rootless Podman (user socket, not system socket)
+      export DOCKER_HOST=unix:///run/user/1000/podman/podman.sock
     '';
 
     # -------------------

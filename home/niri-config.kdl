@@ -219,6 +219,10 @@ binds {
     Mod+Shift+F hotkey-overlay-title="Fullscreen Window" {
         fullscreen-window
     }
+    // Center window
+    Mod+C hotkey-overlay-title="Center Window" {
+        center-window
+    }
     // Floating
     Mod+V hotkey-overlay-title="Toggle Floating" {
         toggle-window-floating
